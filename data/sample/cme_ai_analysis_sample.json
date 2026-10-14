@@ -1,0 +1,71 @@
+[
+  {
+    "analysis_id": "ANL-2026-10-07T13:53:00-CME-001",
+    "event_id": "2026-10-07T13:53:00-CME-001",
+    "model_used": "gpt-oss-120b",
+    "timestamp": "2026-10-14T14:16:52.138458+00:00",
+    "scientific_assessment": {
+      "plasma_speed_evaluation": "Slow CME; speed 310 km/s, comparable to ambient solar wind, low kinetic energy.",
+      "earth_directed_analysis": "Trajectory flagged Earth-directed; estimated arrival 2026-10-11T06:00Z. Deflection by a nearby coronal hole suggests a likely flank encounter rather than a full head\u2011on impact.",
+      "flare_and_source_correlation": "Associated with a C7.9 class flare from AR 14549 (N10W04). EUV dimming and a wave observed in SDO AIA 193 support the eruption source and its proximity to the solar disk center, consistent with the Earth\u2011directed classification.",
+      "geomagnetic_impact_potential": "Predicted max Kp 4.0 (G0). Below the geomagnetic storm threshold; only minor disturbances expected, primarily confined to high\u2011latitude auroral activity."
+    },
+    "risk_recommendation": {
+      "suggested_risk_level": "LOW",
+      "confidence_score": 0.92,
+      "primary_rationale": "Slow speed, low Kp forecast, and probable flank impact together indicate minimal geomagnetic risk."
+    },
+    "secondary_hazards": {
+      "hf_radio_blackout_risk": "NONE",
+      "radiation_storm_risk": "LOW",
+      "auroral_visibility_latitudes": "High latitudes (55-65\u00b0)"
+    },
+    "operational_guidance": "Maintain routine monitoring of solar wind parameters and ENLIL model updates. No immediate protective actions are required, but continue to refine arrival time forecasts as the CME approaches Earth."
+  },
+  {
+    "analysis_id": "ANL-2026-10-08T16:24:00-CME-001",
+    "event_id": "2026-10-08T16:24:00-CME-001",
+    "model_used": "gpt-oss-120b",
+    "timestamp": "2026-10-14T14:16:55.034266+00:00",
+    "scientific_assessment": {
+      "plasma_speed_evaluation": "The CME speed of 579 km/s places it in the moderate speed category (500\u20111000 km/s), indicating a typical CME with modest kinetic energy and a likely weak shock front.",
+      "earth_directed_analysis": "Earth-directed flag is true. The modeled arrival window of 2026-10-11T22:00Z is consistent with a transit time of ~3.5 days for a 579 km/s CME. The trajectory appears to be near head\u2011on rather than a flank encounter, but the moderate speed suggests a relatively gentle impact.",
+      "flare_and_source_correlation": "The source is identified as a filament eruption near N05W25, observed in SDO/AIA 193/304 and STEREO\u2011A EUV data. No accompanying X\u2011ray flare of class M or higher is reported, consistent with a quiet filament eruption rather than an impulsive flare.",
+      "geomagnetic_impact_potential": "Predicted max Kp of 4.0 is below the geomagnetic storm threshold (Kp \u22655). Expected geomagnetic response is G0 (quiet) with only minor, high\u2011latitude auroral activity."
+    },
+    "risk_recommendation": {
+      "suggested_risk_level": "LOW",
+      "confidence_score": 0.86,
+      "primary_rationale": "Moderate CME speed, Earth\u2011directed but weak shock, and a predicted Kp of 4 indicate only minor geomagnetic disturbance; no strong flare or SEP signatures were observed."
+    },
+    "secondary_hazards": {
+      "hf_radio_blackout_risk": "NONE",
+      "radiation_storm_risk": "LOW",
+      "auroral_visibility_latitudes": "High latitudes (~55\u201165\u00b0) with possible faint aurora at ~55\u00b0 during peak Kp 4 conditions"
+    },
+    "operational_guidance": "Maintain routine solar wind monitoring and update ENLIL forecasts as the CME approaches. No immediate protective actions are required for power grids or satellite operations, but operators should be aware of a slight increase in high\u2011latitude geomagnetic activity around 2026-10-11T22:00Z. Continue to watch for any unexpected SEP enhancements."
+  },
+  {
+    "analysis_id": "ANL-2026-10-12T05:09:00-CME-001",
+    "event_id": "2026-10-12T05:09:00-CME-001",
+    "model_used": "gpt-oss-120b",
+    "timestamp": "2026-10-14T14:16:57.899815+00:00",
+    "scientific_assessment": {
+      "plasma_speed_evaluation": "The CME speed of 741 km/s places it in the moderate speed category (500\u20111000 km/s). It is faster than ambient solar wind but below the fast/energetic threshold, indicating a moderate\u2011energy eruption capable of driving a shock but not an extreme one.",
+      "earth_directed_analysis": "Earth\u2011directed trajectory is flagged true. The source location (S16E23) and the observed east\u2011limb eruption suggest a near\u2011head\u2011on impact. The modeled arrival window of 2026\u201110\u201114T11:30Z is consistent with a transit time of ~2.5 days for a 741 km/s CME. Arrival is expected as a shock front with moderate compression, not merely a flank grazing.",
+      "flare_and_source_correlation": "The eruption is identified as a filament lift\u2011off spanning S12E15 to S20E30, observed in multiple EUV channels (SDO AIA, GOES SUVI, STEREO EUVI). No accompanying X\u2011ray flare is reported, indicating a filament\u2011driven CME rather than a flare\u2011driven event. The source region is modest (Active Region: 0) and the half\u2011angle of 27\u00b0 suggests a relatively narrow angular width.",
+      "geomagnetic_impact_potential": "Predicted max Kp of 6.0 corresponds to a G2 (moderate) geomagnetic storm. Expected effects include high\u2011latitude power system voltage alarms, possible GPS orientation irregularities, and auroral displays extending to mid\u2011latitudes (~55\u201160\u00b0). The storm is above the minor threshold but below severe (Kp \u22658)."
+    },
+    "risk_recommendation": {
+      "suggested_risk_level": "MEDIUM",
+      "confidence_score": 0.86,
+      "primary_rationale": "Moderate CME speed and a head\u2011on Earth impact produce a predicted Kp\u202f=\u202f6 storm, which can affect high\u2011latitude infrastructure and satellite operations. Confidence is high due to consistent multi\u2011instrument observations and modeled arrival time."
+    },
+    "secondary_hazards": {
+      "hf_radio_blackout_risk": "LOW",
+      "radiation_storm_risk": "LOW",
+      "auroral_visibility_latitudes": "Mid\u2011latitudes (~55\u201160\u00b0) and polar regions"
+    },
+    "operational_guidance": "Maintain continuous monitoring of solar wind parameters via ACE/DSCOVR and ground\u2011based magnetometers. Issue a G2\u2011level geomagnetic storm alert to power grid operators and satellite controllers 12\u201118\u202fhours before predicted arrival. Prepare for possible high\u2011latitude voltage fluctuations and schedule contingency procedures for GPS\u2011dependent systems. Continue imaging of the CME front to refine arrival time forecasts."
+  }
+]

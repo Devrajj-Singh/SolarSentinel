@@ -9,9 +9,18 @@
     "default_date_range_days": 7,
     "note": "DONKI API requires no authentication key as of Sep 2026 migration"
   },
-  "gemini": {
+  "ai_service": {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+    "api_key": "YOUR_GROQ_API_KEY_HERE",
+    "temperature": 0.2,
+    "max_tokens": 2048,
+    "note": "Powered by Groq LPU inference. Can also be set via GROQ_API_KEY environment variable"
+  },
+  "gemini_fallback": {
     "api_key": "YOUR_GEMINI_API_KEY_HERE",
-    "model": "gemini-1.5-flash",
+    "model": "gemini-2.5-flash",
     "temperature": 0.2,
     "max_output_tokens": 1024
   },

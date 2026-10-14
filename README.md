@@ -27,12 +27,12 @@ For the complete architectural design and risk routing matrix, see [`docs/archit
 ## Project Roadmap & Phases
 
 - [x] **Phase 1: Foundation** — Project scaffolding, configuration templates, sample NASA datasets, and repository standards.
-- [ ] **Phase 2: Data Collection** — UiPath HTTP retrieval for NASA DONKI endpoints (CME, FLR, GST).
-- [ ] **Phase 3: Data Processing** — JSON parsing, schema extraction, and metric normalization.
-- [ ] **Phase 4: AI Analysis** — Integration with Gemini API using strict structured JSON output and schema validation.
-- [ ] **Phase 5: Risk Engine** — Deterministic classification rules (LOW / MEDIUM / HIGH) and routing logic.
-- [ ] **Phase 6: Logging & Reporting** — UiPath Excel master log updates and automated report generation.
-- [ ] **Phase 7: Notifications & Polish** — High-priority alerts, human-in-the-loop approvals, and end-to-end workflow verification.
+- [x] **Phase 2: Data Collection** — UiPath HTTP retrieval for NASA DONKI endpoints (CME, FLR, GST).
+- [x] **Phase 3: Data Processing** — JSON parsing, schema extraction, and metric normalization (`NormalizeEvents.xaml`).
+- [x] **Phase 4: AI Analysis** — Integration with GPT-OSS 120B (OpenAI Open-Weight MoE) via Groq LPU with strict structured JSON output and schema validation.
+- [x] **Phase 5: Risk Engine** — Deterministic classification rules (LOW / MEDIUM / HIGH), safety guardrails, and routing logic (`scripts/risk_engine.py`).
+- [x] **Phase 6: Logging & Reporting** — Styled Excel master log (`output/logs/events_log.xlsx`) and executive space weather intelligence reports (`output/reports/`).
+- [x] **Phase 7: Notifications & Polish** — High-priority alerts, human-in-the-loop approvals, and end-to-end workflow verification (`scripts/run_pipeline.py`).
 
 ---
 
@@ -40,7 +40,7 @@ For the complete architectural design and risk routing matrix, see [`docs/archit
 
 - **RPA Platform**: UiPath Studio (System, WebAPI, and Excel Activities)
 - **Data Source**: NASA Space Weather Database Of Notifications, Knowledge, Information (DONKI) REST APIs
-- **AI Model**: Google Gemini API (`gemini-1.5-flash`)
+- **AI Model**: GPT-OSS 120B (`openai/gpt-oss-120b`, OpenAI Open-Weight MoE) / Gemini fallback
 - **Data & Configuration**: JSON, Microsoft Excel (`.xlsx`)
 - **Scripting (Optional / Helpers)**: Python 3.10+
 - **Version Control**: Git & GitHub
