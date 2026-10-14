@@ -1,4 +1,4 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="Main" VisualBasic.Settings="{x:Null}" sap2010:WorkflowViewState.IdRef="ActivityBuilder_1" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:uwah="clr-namespace:UiPath.Web.Activities.Http;assembly=UiPath.Web.Activities" xmlns:uwahm="clr-namespace:UiPath.Web.Activities.Http.Models;assembly=UiPath.Web.Activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Main" VisualBasic.Settings="{x:Null}" sap2010:WorkflowViewState.IdRef="ActivityBuilder_1" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <TextExpression.NamespacesForImplementation>
     <sco:Collection x:TypeArguments="x:String">
       <x:String>System.Activities</x:String>
@@ -25,20 +25,9 @@
       <x:String>System.Windows.Markup</x:String>
       <x:String>GlobalVariablesNamespace</x:String>
       <x:String>GlobalConstantsNamespace</x:String>
-      <x:String>UiPath.Web.Activities.Http.Models</x:String>
       <x:String>System.Runtime.Serialization</x:String>
-      <x:String>System.Security</x:String>
-      <x:String>System.Net</x:String>
-      <x:String>UiPath.Platform.ResourceHandling</x:String>
       <x:String>System.Reflection</x:String>
-      <x:String>UiPath.Web.Activities.Http</x:String>
-      <x:String>UiPath.Sdk.Activities</x:String>
-      <x:String>UiPath.Sdk.Activities.DependencyInjection.Contracts</x:String>
-      <x:String>UiPath.Sdk.Activities.DependencyInjection</x:String>
-      <x:String>System.Linq.Expressions</x:String>
-      <x:String>System.Numerics</x:String>
-      <x:String>UiPath.Web.Activities</x:String>
-      <x:String>UiPath.Platform</x:String>
+      <x:String>UiPath.Platform.ResourceHandling</x:String>
     </sco:Collection>
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
@@ -48,9 +37,8 @@
       <AssemblyReference>System.Private.CoreLib</AssemblyReference>
       <AssemblyReference>mscorlib</AssemblyReference>
       <AssemblyReference>System.Data</AssemblyReference>
-      <AssemblyReference>System</AssemblyReference>
-      <AssemblyReference>System.Linq</AssemblyReference>
       <AssemblyReference>System.Data.Common</AssemblyReference>
+      <AssemblyReference>System.Data.DataSetExtensions</AssemblyReference>
       <AssemblyReference>System.Drawing</AssemblyReference>
       <AssemblyReference>System.Drawing.Primitives</AssemblyReference>
       <AssemblyReference>System.Drawing.Common</AssemblyReference>
@@ -63,72 +51,95 @@
       <AssemblyReference>System.Xaml</AssemblyReference>
       <AssemblyReference>UiPath.System.Activities</AssemblyReference>
       <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
-      <AssemblyReference>System.Data.DataSetExtensions</AssemblyReference>
-      <AssemblyReference>System.Net.Mail</AssemblyReference>
-      <AssemblyReference>System.ObjectModel</AssemblyReference>
-      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
-      <AssemblyReference>UiPath.Studio.Constants</AssemblyReference>
-      <AssemblyReference>UiPath.Web.Activities</AssemblyReference>
-      <AssemblyReference>System.Private.ServiceModel</AssemblyReference>
-      <AssemblyReference>System.Private.DataContractSerialization</AssemblyReference>
-      <AssemblyReference>System.Runtime.Serialization.Formatters</AssemblyReference>
-      <AssemblyReference>System.Runtime.Serialization.Primitives</AssemblyReference>
-      <AssemblyReference>System.Security.Permissions</AssemblyReference>
-      <AssemblyReference>System.Runtime.InteropServices</AssemblyReference>
-      <AssemblyReference>System.Net.Primitives</AssemblyReference>
-      <AssemblyReference>System.Net.HttpListener</AssemblyReference>
-      <AssemblyReference>System.Net.WebProxy</AssemblyReference>
-      <AssemblyReference>System.Net.NameResolution</AssemblyReference>
-      <AssemblyReference>System.Net.WebHeaderCollection</AssemblyReference>
-      <AssemblyReference>System.Net.WebClient</AssemblyReference>
-      <AssemblyReference>System.Net.Requests</AssemblyReference>
       <AssemblyReference>UiPath.Platform</AssemblyReference>
-      <AssemblyReference>System.Reflection.DispatchProxy</AssemblyReference>
-      <AssemblyReference>System.Reflection.TypeExtensions</AssemblyReference>
-      <AssemblyReference>System.Reflection.Metadata</AssemblyReference>
-      <AssemblyReference>System.Console</AssemblyReference>
-      <AssemblyReference>System.Configuration.ConfigurationManager</AssemblyReference>
-      <AssemblyReference>System.ComponentModel</AssemblyReference>
-      <AssemblyReference>System.Memory</AssemblyReference>
-      <AssemblyReference>System.Private.Uri</AssemblyReference>
-      <AssemblyReference>System.Collections</AssemblyReference>
-      <AssemblyReference>System.Collections.NonGeneric</AssemblyReference>
-      <AssemblyReference>System.Linq.Expressions</AssemblyReference>
-      <AssemblyReference>System.Runtime.Numerics</AssemblyReference>
-      <AssemblyReference>UiPath.CodedWorkflows</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence DisplayName="Main Sequence" sap:VirtualizedContainerService.HintSize="699,593" sap2010:WorkflowViewState.IdRef="Sequence_1">
+  <Sequence DisplayName="SolarSentinel V2 Master Orchestrator" sap:VirtualizedContainerService.HintSize="650,1400" sap2010:WorkflowViewState.IdRef="Sequence_1">
     <Sequence.Variables>
-      <Variable x:TypeArguments="uwahm:HttpResponseSummary" Name="donkiResponse" />
+      <Variable x:TypeArguments="x:String" Name="startDate" />
+      <Variable x:TypeArguments="x:String" Name="endDate" />
+      <Variable x:TypeArguments="x:String" Name="systemHealth" />
+      <Variable x:TypeArguments="x:Int32" Name="ingestionStatus" />
     </Sequence.Variables>
     <sap:WorkflowViewStateService.ViewState>
       <scg:Dictionary x:TypeArguments="x:String, x:Object">
         <x:Boolean x:Key="IsExpanded">True</x:Boolean>
       </scg:Dictionary>
     </sap:WorkflowViewStateService.ViewState>
-    <uwah:NetHttpRequest BasicAuthPassword="{x:Null}" BasicAuthSecurePassword="{x:Null}" BasicAuthUsername="{x:Null}" BinaryPayload="{x:Null}" ClientCertPassword="{x:Null}" ClientCertPath="{x:Null}" ClientCertSecurePassword="{x:Null}" Cookies="{x:Null}" CustomNegotiatedAuthCredentials="{x:Null}" FilePath="{x:Null}" FormData="{x:Null}" Headers="{x:Null}" LocalFiles="{x:Null}" OAuthToken="{x:Null}" OutputFileName="{x:Null}" OutputFileTargetFolder="{x:Null}" Parameters="{x:Null}" PathResource="{x:Null}" ProxyConfiguration="{x:Null}" ResourceFiles="{x:Null}" TextPayload="{x:Null}" AuthenticationType="None" ContinueOnError="True" DisableSslVerification="False" DisplayName="HTTP Request" EnableCookies="True" FileOverwrite="AutoRename" FollowRedirects="True" FormDataParts="[New List (Of FormDataPart) From _&#xD;&#xA;{&#xD;&#xA;&#x9;New FileFormDataPart(),&#xD;&#xA;&#x9;New BinaryFormDataPart(),&#xD;&#xA;&#x9;New TextFormDataPart()&#xD;&#xA;}]" sap:VirtualizedContainerService.HintSize="450,279" sap2010:WorkflowViewState.IdRef="NetHttpRequest_1" InitialDelay="500" MaxRedirects="3" MaxRetryAfterDelay="30000" Method="GET" Multiplier="2" PreferRetryAfterValue="True" RequestBodyType="None" RequestUrl="https://ccmc.gsfc.nasa.gov/DONKI-API/get/CME?startDate=2026-10-07&amp;endDate=2026-10-14" Result="[donkiResponse]" RetryCount="3" RetryStatusCodes="[New List (Of System.Net.HttpStatusCode) From _&#xD;&#xA;{&#xD;&#xA;&#x9;System.Net.HttpStatusCode.RequestTimeout,&#xD;&#xA;&#x9;System.Net.HttpStatusCode.TooManyRequests,&#xD;&#xA;&#x9;System.Net.HttpStatusCode.InternalServerError,&#xD;&#xA;&#x9;System.Net.HttpStatusCode.BadGateway,&#xD;&#xA;&#x9;System.Net.HttpStatusCode.ServiceUnavailable,&#xD;&#xA;&#x9;System.Net.HttpStatusCode.GatewayTimeout&#xD;&#xA;}]" SaveRawRequestResponse="False" SaveResponseAsFile="False" TextPayloadContentType="application/json" TextPayloadEncoding="UTF-8" TlsProtocol="Automatic" UseJitter="True" UseOsNegotiatedAuthCredentials="True">
-      <uwah:NetHttpRequest.TimeoutInMiliseconds>
-        <InArgument x:TypeArguments="s:Nullable(x:Int32)">
-          <Literal x:TypeArguments="s:Nullable(x:Int32)" Value="10000" />
-        </InArgument>
-      </uwah:NetHttpRequest.TimeoutInMiliseconds>
-      <sap:WorkflowViewStateService.ViewState>
-        <scg:Dictionary x:TypeArguments="x:String, x:Object">
-          <x:Boolean x:Key="IsExpanded">True</x:Boolean>
-          <x:Boolean x:Key="IsPinned">False</x:Boolean>
-        </scg:Dictionary>
-      </sap:WorkflowViewStateService.ViewState>
-    </uwah:NetHttpRequest>
-    <WriteLine DisplayName="Write Line" sap:VirtualizedContainerService.HintSize="450,123.5" sap2010:WorkflowViewState.IdRef="WriteLine_1" Text="[donkiResponse.TextContent]" />
-    <ui:WriteTextFile FileName="{x:Null}" Output="{x:Null}" DisplayName="Write Text File" File="[LocalResource.FromPath(&quot;C:\\Users\\Devraj\\SolarSentinel\\data\\raw\\cme_response.json&quot;)]" sap:VirtualizedContainerService.HintSize="450,167.5" sap2010:WorkflowViewState.IdRef="WriteTextFile_1" Text="[donkiResponse.TextContent]" />
-    <ui:InvokeWorkflowFile DisplayName="Invoke NormalizeEvents" WorkflowFileName="NormalizeEvents.xaml" sap:VirtualizedContainerService.HintSize="450,200" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_1">
-      <ui:InvokeWorkflowFile.Arguments>
-        <scg:Dictionary x:TypeArguments="x:String, Argument">
-          <InArgument x:TypeArguments="x:String" x:Key="in_inputFilePath">[&quot;C:\\Users\\Devraj\\SolarSentinel\\data\\raw\\cme_response.json&quot;]</InArgument>
-          <InArgument x:TypeArguments="x:String" x:Key="in_outputFilePath">[&quot;C:\\Users\\Devraj\\SolarSentinel\\data\\raw\\cme_normalized.json&quot;]</InArgument>
-        </scg:Dictionary>
-      </ui:InvokeWorkflowFile.Arguments>
-    </ui:InvokeWorkflowFile>
+    <ui:LogMessage DisplayName="Log Master Run Start" sap:VirtualizedContainerService.HintSize="550,140" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;=========================================================&quot; + Environment.NewLine + &quot;  🛰️ SolarSentinel V2: Master Autonomous RPA Orchestrator  &quot; + Environment.NewLine + &quot;=========================================================&quot;]" />
+    <TryCatch DisplayName="Master TryCatch Block" sap:VirtualizedContainerService.HintSize="550,1100" sap2010:WorkflowViewState.IdRef="TryCatch_1">
+      <TryCatch.Try>
+        <Sequence DisplayName="Master Execution Sequence" sap:VirtualizedContainerService.HintSize="500,900" sap2010:WorkflowViewState.IdRef="Sequence_2">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+          <ui:InvokeWorkflowFile DisplayName="Step 1: Initialize &amp; Diagnostics" WorkflowFileName="Initialize.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_1">
+            <ui:InvokeWorkflowFile.Arguments>
+              <OutArgument x:TypeArguments="x:String" x:Key="out_startDate">[startDate]</OutArgument>
+              <OutArgument x:TypeArguments="x:String" x:Key="out_endDate">[endDate]</OutArgument>
+              <OutArgument x:TypeArguments="x:String" x:Key="out_systemHealth">[systemHealth]</OutArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 2: Collect Space Weather Data" WorkflowFileName="CollectSpaceWeatherData.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_2">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:String" x:Key="in_startDate">[startDate]</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_endDate">[endDate]</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_outputFilePath">["C:\Users\Devraj\SolarSentinel\data\raw\cme_response.json"]</InArgument>
+              <OutArgument x:TypeArguments="x:Int32" x:Key="out_statusCode">[ingestionStatus]</OutArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 3: Normalize CME Events" WorkflowFileName="NormalizeEvents.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_3">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:String" x:Key="in_inputFilePath">["C:\Users\Devraj\SolarSentinel\data\raw\cme_response.json"]</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_outputFilePath">["C:\Users\Devraj\SolarSentinel\data\raw\cme_normalized.json"]</InArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 4: Detect New Events &amp; Enqueue" WorkflowFileName="DetectNewEvents.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_5">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:String" x:Key="in_normalizedFilePath">["C:\Users\Devraj\SolarSentinel\data\raw\cme_normalized.json"]</InArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 5: Process Transaction Queue" WorkflowFileName="ProcessTransactions.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_6">
+            <ui:InvokeWorkflowFile.Arguments>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 6: Finalize Run &amp; Commit State" WorkflowFileName="FinalizeRun.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:String" x:Key="in_runStatus">[systemHealth]</InArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+        </Sequence>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception" sap:VirtualizedContainerService.HintSize="504,22" sap2010:WorkflowViewState.IdRef="Catch`1_1">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+              <x:Boolean x:Key="IsPinned">False</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="s:Exception" Name="exception" />
+            </ActivityAction.Argument>
+            <Sequence DisplayName="Catch Exception Handler" sap:VirtualizedContainerService.HintSize="450,380" sap2010:WorkflowViewState.IdRef="Sequence_3">
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+              <ui:LogMessage DisplayName="Log Orchestration Exception" sap:VirtualizedContainerService.HintSize="434,140" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Error" Message="[&quot;SolarSentinel V2 Orchestrator encountered an unhandled exception: &quot; + exception.Message]" />
+              <ui:InvokeWorkflowFile DisplayName="Finalize Run with Failure" WorkflowFileName="FinalizeRun.xaml" sap:VirtualizedContainerService.HintSize="434,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_5">
+                <ui:InvokeWorkflowFile.Arguments>
+                  <InArgument x:TypeArguments="x:String" x:Key="in_runStatus">FAILED</InArgument>
+                </ui:InvokeWorkflowFile.Arguments>
+              </ui:InvokeWorkflowFile>
+            </Sequence>
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
   </Sequence>
 </Activity>
