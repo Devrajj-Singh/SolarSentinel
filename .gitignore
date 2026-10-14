@@ -1,0 +1,70 @@
+# Secrets & Environment variables
+config/settings.json
+*.env
+.env
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# UiPath
+uipath/.local/
+uipath/.settings/
+uipath/.tmh/
+uipath/project.json.local
+uipath/*.bak
+uipath/*.lck
+*.local
+.screenshots/
+.entities/
+
+# Data & Output Files
+data/raw/*
+!data/raw/.gitkeep
+output/logs/*
+!output/logs/.gitkeep
+output/reports/*
+!output/reports/.gitkeep
+*.xlsx
+*.xls
+*.csv
+*.pdf
+*.docx
+
+# IDE & Editors
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Windows & OS
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store

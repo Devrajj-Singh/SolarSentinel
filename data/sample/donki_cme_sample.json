@@ -1,0 +1,87 @@
+[
+  {
+    "activityID": "2024-05-10T07:12:00-CME-001",
+    "catalog": "M2M_CATALOG",
+    "startTime": "2024-05-10T07:12Z",
+    "sourceLocation": "S18W89",
+    "activeRegionNum": 13664,
+    "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CME/28905/1",
+    "note": "Halo CME observed by SOHO/LASCO C2/C3 and STEREO A COR2.",
+    "instruments": [
+      {
+        "displayName": "SOHO: LASCO/C2"
+      },
+      {
+        "displayName": "SOHO: LASCO/C3"
+      },
+      {
+        "displayName": "STEREO A: SECCHI/COR2"
+      }
+    ],
+    "cmeAnalyses": [
+      {
+        "time21_5": "2024-05-10T09:30Z",
+        "latitude": -18.0,
+        "longitude": 89.0,
+        "halfAngle": 45.0,
+        "speed": 1250.0,
+        "type": "C",
+        "isMostAccurate": true,
+        "note": "Fast halo CME related to major active region 3664.",
+        "levelOfData": 1,
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/28906/1",
+        "enlilList": [
+          {
+            "modelCompletionTime": "2024-05-10T12:00Z",
+            "au": 1.0,
+            "estimatedShockArrivalTime": "2024-05-11T16:00Z",
+            "estimatedDuration": 24.0,
+            "rmin_re": 6.5,
+            "kp_18": 7,
+            "kp_90": 8,
+            "kp_135": 8,
+            "kp_180": 9,
+            "isEarthGB": true,
+            "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/28907/1",
+            "impactList": [
+              {
+                "isGlancingBlow": false,
+                "location": "Earth",
+                "arrivalTime": "2024-05-11T16:30Z"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "activityID": "2024-05-11T02:00:00-CME-001",
+    "catalog": "M2M_CATALOG",
+    "startTime": "2024-05-11T02:00Z",
+    "sourceLocation": "N20E45",
+    "activeRegionNum": 13668,
+    "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CME/28910/1",
+    "note": "Narrow CME off north-east limb, not Earth-directed.",
+    "instruments": [
+      {
+        "displayName": "SOHO: LASCO/C2"
+      }
+    ],
+    "cmeAnalyses": [
+      {
+        "time21_5": "2024-05-11T03:45Z",
+        "latitude": 20.0,
+        "longitude": -45.0,
+        "halfAngle": 18.0,
+        "speed": 420.0,
+        "type": "S",
+        "isMostAccurate": true,
+        "note": "Slow narrow CME, clear miss of Earth.",
+        "levelOfData": 0,
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/28911/1",
+        "enlilList": null
+      }
+    ]
+  }
+]

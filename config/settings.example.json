@@ -1,0 +1,33 @@
+{
+  "nasa": {
+    "api_key": "YOUR_NASA_API_KEY_HERE",
+    "base_url": "https://api.nasa.gov/DONKI",
+    "endpoints": {
+      "cme": "/CME",
+      "solar_flare": "/FLR",
+      "geomagnetic_storm": "/GST"
+    },
+    "default_date_range_days": 7
+  },
+  "gemini": {
+    "api_key": "YOUR_GEMINI_API_KEY_HERE",
+    "model": "gemini-1.5-flash",
+    "temperature": 0.2,
+    "max_output_tokens": 1024
+  },
+  "risk_engine": {
+    "high_confidence_threshold": 0.8,
+    "medium_confidence_threshold": 0.5,
+    "severity_weights": {
+      "S1": "LOW",
+      "S2": "LOW",
+      "S3": "MEDIUM",
+      "S4": "HIGH",
+      "S5": "HIGH"
+    }
+  },
+  "output": {
+    "excel_log_path": "output/logs/events_log.xlsx",
+    "report_directory": "output/reports/"
+  }
+}
