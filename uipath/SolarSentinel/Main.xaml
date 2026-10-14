@@ -105,7 +105,16 @@
             <ui:InvokeWorkflowFile.Arguments>
             </ui:InvokeWorkflowFile.Arguments>
           </ui:InvokeWorkflowFile>
-          <ui:InvokeWorkflowFile DisplayName="Step 6: Finalize Run &amp; Commit State" WorkflowFileName="FinalizeRun.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4">
+          <ui:InvokeWorkflowFile DisplayName="Step 6: Match Operational Assets" WorkflowFileName="MatchAssets.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_7">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:String" x:Key="in_riskAssessmentPath">["C:\Users\Devraj\SolarSentinel\data\processed\cme_risk_assessed.json"]</InArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 7: Manage Space Weather Incidents" WorkflowFileName="CreateIncident.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_8">
+            <ui:InvokeWorkflowFile.Arguments>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 8: Finalize Run &amp; Commit State" WorkflowFileName="FinalizeRun.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4">
             <ui:InvokeWorkflowFile.Arguments>
               <InArgument x:TypeArguments="x:String" x:Key="in_runStatus">[systemHealth]</InArgument>
             </ui:InvokeWorkflowFile.Arguments>
