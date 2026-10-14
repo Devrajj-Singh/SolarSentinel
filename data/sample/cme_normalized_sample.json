@@ -1,0 +1,58 @@
+[
+  {
+    "event_id": "2026-10-10T16:15:00-CME-001",
+    "event_type": "CME",
+    "catalog": "M2M_CATALOG",
+    "start_time": "2026-10-10T16:15Z",
+    "source_location": "N08W54",
+    "active_region": 14549,
+    "instruments": [
+      "GOES: CCOR-1",
+      "SOHO: LASCO/C2",
+      "SOHO: LASCO/C3"
+    ],
+    "speed_km_s": 1553.0,
+    "half_angle_deg": 45.0,
+    "cme_type": "O",
+    "feature_code": "SH",
+    "measurement_technique": "SWPC_CAT",
+    "time_at_21_5_rs": "2026-10-10T17:53Z",
+    "is_earth_directed": false,
+    "earth_arrival_time": null,
+    "max_kp_predicted": 9,
+    "estimated_duration_hrs": 16.5,
+    "linked_event_ids": [
+      "2026-10-10T14:58:00-FLR-001",
+      "2026-10-13T00:21:00-IPS-001"
+    ],
+    "note": "CME observed to the NW in SOHO LASCO C2/C3 and GOES CCOR-1, with a full halo shock. Not yet observed in STEREO A COR2 white light imagery. The source is AR 14549, associated with an M6.4 flare peaking at 2026-10-10T15:10Z observed in SDO AIA 131. Also observed starting around 2026-10-10T15:04Z as field line movement and very large EUV wave, some dimming, and brightening/post eruptive arcade in SDO AIA 131/171/193/211/304.",
+    "donki_url": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49064/-1"
+  },
+  {
+    "event_id": "2026-10-07T13:53:00-CME-001",
+    "event_type": "CME",
+    "catalog": "M2M_CATALOG",
+    "start_time": "2026-10-07T13:53Z",
+    "source_location": "N10W04",
+    "active_region": 14549,
+    "instruments": [
+      "STEREO A: SECCHI/COR2",
+      "SOHO: LASCO/C3",
+      "SOHO: LASCO/C2",
+      "GOES: CCOR-1"
+    ],
+    "speed_km_s": 310.0,
+    "half_angle_deg": 36.0,
+    "cme_type": "S",
+    "feature_code": "LE",
+    "measurement_technique": "SWPC_CAT",
+    "time_at_21_5_rs": "2026-10-08T00:40Z",
+    "is_earth_directed": true,
+    "earth_arrival_time": "2026-10-11T06:00Z",
+    "max_kp_predicted": 4,
+    "estimated_duration_hrs": null,
+    "linked_event_ids": [],
+    "note": "CME first seen to the NE in STEREO A COR2 starting at 2026-10-07T13:53Z. So far it is only visible in COR2A. The source of this CME is a C7.9 class flare from AR 14549 (N10W04) peaking at 2026-10-07T13:17Z best seen in SDO AIA 171. Some dimming and an EUVI wave associated with the eruption can be seen in SDO AIA 193. Some deflection is evident in the measurement of this CME, likely due to it close proximity to a coronal hole to the SE of AR 14549.",
+    "donki_url": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49011/-1"
+  }
+]

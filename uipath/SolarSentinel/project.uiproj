@@ -1,0 +1,6 @@
+{
+  "Name": "SolarSentinel",
+  "ProjectType": "Process",
+  "Description": "AI-assisted space-weather intelligence and RPA automation using NASA DONKI, Gemini AI, and UiPath.",
+  "MainFile": "Main.xaml"
+}

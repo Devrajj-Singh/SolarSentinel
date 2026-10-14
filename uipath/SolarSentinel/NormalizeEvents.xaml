@@ -1,0 +1,452 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="NormalizeEvents" this:NormalizeEvents.in_outputFilePath="..\..\data\raw\cme_normalized.json" this:NormalizeEvents.in_inputFilePath="..\..\data\raw\cme_response.json" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:this="clr-namespace:" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_outputFilePath" Type="InArgument(x:String)" />
+    <x:Property Name="in_inputFilePath" Type="InArgument(x:String)" />
+  </x:Members>
+  <VisualBasic.Settings>
+    <x:Null />
+  </VisualBasic.Settings>
+  <sap2010:WorkflowViewState.IdRef>NormalizeEvents_1</sap2010:WorkflowViewState.IdRef>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System.Activities.Expressions</x:String>
+      <x:String>System.Activities.Validation</x:String>
+      <x:String>System.Activities.XamlIntegration</x:String>
+      <x:String>Microsoft.VisualBasic</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Collections.ObjectModel</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>System.Diagnostics</x:String>
+      <x:String>System.Drawing</x:String>
+      <x:String>System.IO</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>System.Net.Mail</x:String>
+      <x:String>System.Xml</x:String>
+      <x:String>System.Xml.Linq</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>System.Windows.Markup</x:String>
+      <x:String>GlobalVariablesNamespace</x:String>
+      <x:String>GlobalConstantsNamespace</x:String>
+      <x:String>System.Reflection</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>Newtonsoft.Json</x:String>
+      <x:String>System.Dynamic</x:String>
+      <x:String>System.ComponentModel</x:String>
+      <x:String>System.Collections.Specialized</x:String>
+      <x:String>System.Linq.Expressions</x:String>
+      <x:String>System.Runtime.Serialization</x:String>
+      <x:String>UiPath.Platform.ResourceHandling</x:String>
+      <x:String>System.Numerics</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>Microsoft.VisualBasic</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>System.Data.Common</AssemblyReference>
+      <AssemblyReference>System.Data.DataSetExtensions</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.Drawing</AssemblyReference>
+      <AssemblyReference>System.Drawing.Primitives</AssemblyReference>
+      <AssemblyReference>System.Drawing.Common</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Xml</AssemblyReference>
+      <AssemblyReference>System.Xml.Linq</AssemblyReference>
+      <AssemblyReference>System.Xaml</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
+      <AssemblyReference>System.Net.Mail</AssemblyReference>
+      <AssemblyReference>System.ObjectModel</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
+      <AssemblyReference>UiPath.Studio.Constants</AssemblyReference>
+      <AssemblyReference>System.Reflection.DispatchProxy</AssemblyReference>
+      <AssemblyReference>System.Reflection.TypeExtensions</AssemblyReference>
+      <AssemblyReference>System.Reflection.Metadata</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>System.Linq.Expressions</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.EventBasedAsync</AssemblyReference>
+      <AssemblyReference>PresentationFramework</AssemblyReference>
+      <AssemblyReference>WindowsBase</AssemblyReference>
+      <AssemblyReference>System.ComponentModel</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.Primitives</AssemblyReference>
+      <AssemblyReference>System.Collections.Specialized</AssemblyReference>
+      <AssemblyReference>System.Collections.NonGeneric</AssemblyReference>
+      <AssemblyReference>System.Console</AssemblyReference>
+      <AssemblyReference>System.Security.Permissions</AssemblyReference>
+      <AssemblyReference>System.Configuration.ConfigurationManager</AssemblyReference>
+      <AssemblyReference>System.Memory</AssemblyReference>
+      <AssemblyReference>System.Private.Uri</AssemblyReference>
+      <AssemblyReference>System.Private.ServiceModel</AssemblyReference>
+      <AssemblyReference>System.Collections</AssemblyReference>
+      <AssemblyReference>System.Private.DataContractSerialization</AssemblyReference>
+      <AssemblyReference>System.Runtime.Serialization.Formatters</AssemblyReference>
+      <AssemblyReference>System.Runtime.Serialization.Primitives</AssemblyReference>
+      <AssemblyReference>UiPath.Platform</AssemblyReference>
+      <AssemblyReference>System.Runtime.Numerics</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="NormalizeEvents" sap:VirtualizedContainerService.HintSize="699,1808" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:Int32" Name="earthDirectedCount">
+        <Variable.Default>
+          <Literal x:TypeArguments="x:Int32" />
+        </Variable.Default>
+      </Variable>
+      <Variable x:TypeArguments="x:Int32" Name="eventCount">
+        <Variable.Default>
+          <Literal x:TypeArguments="x:Int32" />
+        </Variable.Default>
+      </Variable>
+      <Variable x:TypeArguments="x:String" Name="finalJson">
+        <Variable.Default>
+          <Literal x:TypeArguments="x:String" Value="" />
+        </Variable.Default>
+      </Variable>
+      <Variable x:TypeArguments="scg:List(x:String)" Name="normalizedEvents">
+        <Variable.Default>
+          <VisualBasicValue x:TypeArguments="scg:List(x:String)" ExpressionText="New List(Of String)()" />
+        </Variable.Default>
+      </Variable>
+      <Variable x:TypeArguments="njl:JArray" Name="cmeArray" />
+      <Variable x:TypeArguments="x:String" Name="rawJson">
+        <Variable.Default>
+          <Literal x:TypeArguments="x:String" Value="" />
+        </Variable.Default>
+      </Variable>
+    </Sequence.Variables>
+    <sap:WorkflowViewStateService.ViewState>
+      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+      </scg:Dictionary>
+    </sap:WorkflowViewStateService.ViewState>
+    <ui:LogMessage DisplayName="Log Message" sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;=== Starting CME Event Normalization ===&quot;]" />
+    <ui:ReadTextFile File="{x:Null}" Content="[rawJson]" DisplayName="Read Text File" FileName="[in_inputFilePath]" sap:VirtualizedContainerService.HintSize="452,124" sap2010:WorkflowViewState.IdRef="ReadTextFile_1" />
+    <If Condition="[String.IsNullOrWhiteSpace(rawJson) OrElse rawJson.Trim().Equals(&quot;[]&quot;)]" sap:VirtualizedContainerService.HintSize="452,568" sap2010:WorkflowViewState.IdRef="If_1">
+      <If.Then>
+        <Sequence DisplayName="Then" sap:VirtualizedContainerService.HintSize="450,403.5" sap2010:WorkflowViewState.IdRef="Sequence_2">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+          <ui:LogMessage DisplayName="Log Message" sap:VirtualizedContainerService.HintSize="416,176" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Warn" Message="[&quot;Raw CME data is empty. Nothing to normalize.&quot;]" />
+          <ui:WriteTextFile File="{x:Null}" Output="{x:Null}" DisplayName="Write Text File" FileName="[in_outputFilePath]" sap:VirtualizedContainerService.HintSize="416,167.5" sap2010:WorkflowViewState.IdRef="WriteTextFile_1" Text="%[]" Encoding="utf-8" />
+        </Sequence>
+      </If.Then>
+      <If.Else>
+        <Sequence DisplayName="Else" sap:VirtualizedContainerService.HintSize="450,25" sap2010:WorkflowViewState.IdRef="Sequence_3">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+          <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_1">
+            <Assign.To>
+              <OutArgument x:TypeArguments="njl:JArray">[cmeArray]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="njl:JArray">[Newtonsoft.Json.Linq.JArray.Parse(rawJson)]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_2">
+            <Assign.To>
+              <OutArgument x:TypeArguments="scg:List(x:String)">[normalizedEvents]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="scg:List(x:String)">[New List(Of String)()]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_3">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:Int32">[eventCount]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:Int32">[0]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_4">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:Int32">[earthDirectedCount]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:Int32">[0]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <ui:ForEach x:TypeArguments="njl:JToken" CurrentIndex="{x:Null}" DisplayName="For Each cmeToken" sap:VirtualizedContainerService.HintSize="452,190" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[cmeArray]">
+            <ui:ForEach.Body>
+              <ActivityAction x:TypeArguments="njl:JToken">
+                <ActivityAction.Argument>
+                  <DelegateInArgument x:TypeArguments="njl:JToken" Name="cmeToken" />
+                </ActivityAction.Argument>
+                <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="450,90.5" sap2010:WorkflowViewState.IdRef="Sequence_4">
+                  <Sequence.Variables>
+                    <Variable x:TypeArguments="njl:JObject" Name="cmeObj" />
+                    <Variable x:TypeArguments="njl:JToken" Name="bestAnalysis" />
+                    <Variable x:TypeArguments="njl:JToken" Name="earthEnlil" />
+                    <Variable x:TypeArguments="x:Boolean" Name="hasEarthEnlil" />
+                    <Variable x:TypeArguments="njl:JObject" Name="normObj" />
+                  </Sequence.Variables>
+                  <sap:WorkflowViewStateService.ViewState>
+                    <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                      <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                    </scg:Dictionary>
+                  </sap:WorkflowViewStateService.ViewState>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_5">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JObject">[cmeObj]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JObject">[CType(cmeToken, Newtonsoft.Json.Linq.JObject)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_6">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[bestAnalysis]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;cmeAnalyses&quot;) IsNot Nothing AndAlso cmeObj(&quot;cmeAnalyses&quot;).Any(Function(a) a(&quot;isMostAccurate&quot;) IsNot Nothing AndAlso CBool(a(&quot;isMostAccurate&quot;))), cmeObj(&quot;cmeAnalyses&quot;).Where(Function(a) a(&quot;isMostAccurate&quot;) IsNot Nothing AndAlso CBool(a(&quot;isMostAccurate&quot;))).OrderByDescending(Function(a) If(a(&quot;speed&quot;) IsNot Nothing AndAlso a(&quot;speed&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(a(&quot;speed&quot;)), 0.0)).FirstOrDefault(), If(cmeObj(&quot;cmeAnalyses&quot;) IsNot Nothing AndAlso cmeObj(&quot;cmeAnalyses&quot;).Count &gt; 0, cmeObj(&quot;cmeAnalyses&quot;).First(), Nothing))]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_7">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:Boolean">[hasEarthEnlil]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:Boolean">[bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;).Any(Function(e) e(&quot;isEarthGB&quot;) IsNot Nothing AndAlso CBool(e(&quot;isEarthGB&quot;)))]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_8">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[earthEnlil]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(hasEarthEnlil, bestAnalysis(&quot;enlilList&quot;).FirstOrDefault(Function(e) e(&quot;isEarthGB&quot;) IsNot Nothing AndAlso CBool(e(&quot;isEarthGB&quot;))), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_9">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JObject">[normObj]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JObject">[New Newtonsoft.Json.Linq.JObject()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_10">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;event_id&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[cmeObj(&quot;activityID&quot;).ToString()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_11">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;event_type&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[&quot;CME&quot;]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_12">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;catalog&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;catalog&quot;) IsNot Nothing, cmeObj(&quot;catalog&quot;).ToString(), &quot;M2M_CATALOG&quot;)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_13">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;start_time&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;startTime&quot;) IsNot Nothing, cmeObj(&quot;startTime&quot;).ToString(), &quot;&quot;)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_14">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;source_location&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;sourceLocation&quot;) IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(cmeObj(&quot;sourceLocation&quot;).ToString()), cmeObj(&quot;sourceLocation&quot;).ToString(), &quot;UNKNOWN&quot;)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_15">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;active_region&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;activeRegionNum&quot;) IsNot Nothing AndAlso cmeObj(&quot;activeRegionNum&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CInt(cmeObj(&quot;activeRegionNum&quot;)), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_16">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;instruments&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;instruments&quot;) IsNot Nothing, Newtonsoft.Json.Linq.JArray.FromObject(cmeObj(&quot;instruments&quot;).Select(Function(i) i(&quot;displayName&quot;).ToString())), New Newtonsoft.Json.Linq.JArray())]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_17">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;speed_km_s&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;speed&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;speed&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(bestAnalysis(&quot;speed&quot;)), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_18">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;half_angle_deg&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;halfAngle&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;halfAngle&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(bestAnalysis(&quot;halfAngle&quot;)), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_19">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;cme_type&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;type&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;type&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, bestAnalysis(&quot;type&quot;).ToString(), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_20">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;feature_code&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;featureCode&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;featureCode&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, bestAnalysis(&quot;featureCode&quot;).ToString(), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_21">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;measurement_technique&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;measurementTechnique&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;measurementTechnique&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, bestAnalysis(&quot;measurementTechnique&quot;).ToString(), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_22">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;time_at_21_5_rs&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;time21_5&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;time21_5&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, bestAnalysis(&quot;time21_5&quot;).ToString(), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_23">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;is_earth_directed&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[hasEarthEnlil]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_24">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;earth_arrival_time&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(hasEarthEnlil AndAlso earthEnlil(&quot;estimatedShockArrivalTime&quot;) IsNot Nothing AndAlso earthEnlil(&quot;estimatedShockArrivalTime&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, earthEnlil(&quot;estimatedShockArrivalTime&quot;).ToString(), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_25">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;max_kp_predicted&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;).Count &gt; 0, If(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_180&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_180&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_180&quot;)), If(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_135&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_135&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_135&quot;)), If(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_90&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_90&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;kp_90&quot;)), Nothing))), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_26">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;estimated_duration_hrs&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(bestAnalysis IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;).Count &gt; 0 AndAlso bestAnalysis(&quot;enlilList&quot;)(0)(&quot;estimatedDuration&quot;) IsNot Nothing AndAlso bestAnalysis(&quot;enlilList&quot;)(0)(&quot;estimatedDuration&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, CDbl(bestAnalysis(&quot;enlilList&quot;)(0)(&quot;estimatedDuration&quot;)), Nothing)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_27">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;linked_event_ids&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;linkedEvents&quot;) IsNot Nothing AndAlso cmeObj(&quot;linkedEvents&quot;).Type &lt;&gt; Newtonsoft.Json.Linq.JTokenType.Null, Newtonsoft.Json.Linq.JArray.FromObject(cmeObj(&quot;linkedEvents&quot;).Select(Function(le) le(&quot;activityID&quot;).ToString())), New Newtonsoft.Json.Linq.JArray())]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_28">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;note&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;note&quot;) IsNot Nothing, cmeObj(&quot;note&quot;).ToString(), &quot;&quot;)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_29">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="njl:JToken">[normObj(&quot;donki_url&quot;)]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="njl:JToken">[If(cmeObj(&quot;link&quot;) IsNot Nothing, cmeObj(&quot;link&quot;).ToString(), &quot;&quot;)]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_30">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="scg:List(x:String)">[normalizedEvents]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="scg:List(x:String)">[normalizedEvents.Concat(New String() {normObj.ToString(Newtonsoft.Json.Formatting.Indented)}).ToList()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_31">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:Int32">[eventCount]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:Int32">[eventCount + 1]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <If Condition="[hasEarthEnlil]" sap:VirtualizedContainerService.HintSize="452,300" sap2010:WorkflowViewState.IdRef="If_2">
+                    <If.Then>
+                      <Sequence DisplayName="Then" sap:VirtualizedContainerService.HintSize="416,176" sap2010:WorkflowViewState.IdRef="Sequence_5">
+                        <Assign sap:VirtualizedContainerService.HintSize="384,176" sap2010:WorkflowViewState.IdRef="Assign_32">
+                          <Assign.To>
+                            <OutArgument x:TypeArguments="x:Int32">[earthDirectedCount]</OutArgument>
+                          </Assign.To>
+                          <Assign.Value>
+                            <InArgument x:TypeArguments="x:Int32">[earthDirectedCount + 1]</InArgument>
+                          </Assign.Value>
+                        </Assign>
+                      </Sequence>
+                    </If.Then>
+                  </If>
+                </Sequence>
+              </ActivityAction>
+            </ui:ForEach.Body>
+          </ui:ForEach>
+          <Assign sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="Assign_33">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:String">[finalJson]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:String">[&quot;[&quot; + Environment.NewLine + String.Join(&quot;,&quot; + Environment.NewLine, normalizedEvents) + Environment.NewLine + &quot;]&quot;]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <ui:WriteTextFile File="{x:Null}" Output="{x:Null}" DisplayName="Write Text File" FileName="[in_outputFilePath]" sap:VirtualizedContainerService.HintSize="452,167.5" sap2010:WorkflowViewState.IdRef="WriteTextFile_2" Text="[finalJson]" Encoding="utf-8" />
+          <ui:LogMessage DisplayName="Log Message" sap:VirtualizedContainerService.HintSize="452,176" sap2010:WorkflowViewState.IdRef="LogMessage_3" Level="Info" Message="[&quot;=== CME Normalization Complete: &quot; + eventCount.ToString() + &quot; events normalized (&quot; + earthDirectedCount.ToString() + &quot; Earth-directed). Saved to: &quot; + in_outputFilePath + &quot; ===&quot;]" />
+        </Sequence>
+      </If.Else>
+    </If>
+  </Sequence>
+</Activity>

@@ -32,12 +32,15 @@ wheels/
 *.egg
 
 # UiPath
-uipath/.local/
-uipath/.settings/
-uipath/.tmh/
-uipath/project.json.local
-uipath/*.bak
-uipath/*.lck
+uipath/**/.local/
+uipath/**/.settings/
+uipath/**/.tmh/
+uipath/**/.objects/
+uipath/**/.project/
+uipath/**/project.json.local
+uipath/**/*.bak
+uipath/**/*.lck
+uipath/**/*.log
 *.local
 .screenshots/
 .entities/
