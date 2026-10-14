@@ -59,14 +59,10 @@ def build_dataframe(risk_assessments, ai_analysis, norm_events):
     return pd.DataFrame(rows)
 
 
-def style_excel(file_path: str):
-    """Apply professional aerospace dashboard styling to the Excel workbook."""
-    wb = openpyxl.load_workbook(file_path)
-    ws = wb.active
-    ws.title = "SolarSentinel Event Log"
-
-    # Header styling
-    header_fill = PatternFill(start_color="1A365D", end_color="1A365D", fill_type="solid")
+def style_worksheet(ws, title: str, header_color: str = "1A365D"):
+    """Generic aerospace styling for individual worksheet."""
+    ws.title = title
+    header_fill = PatternFill(start_color=header_color, end_color=header_color, fill_type="solid")
     header_font = Font(name="Segoe UI", size=11, bold=True, color="FFFFFF")
     data_font = Font(name="Segoe UI", size=10)
     center_align = Alignment(horizontal="center", vertical="center")
@@ -79,54 +75,67 @@ def style_excel(file_path: str):
         bottom=Side(style='thin', color='CBD5E0')
     )
 
-    # Style header row
     for col in range(1, ws.max_column + 1):
         cell = ws.cell(row=1, column=col)
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = center_align
         cell.border = thin_border
-    ws.row_dimensions[1].height = 28
-
-    # Style data rows and color-code risk levels
-    risk_colors = {
-        "LOW": PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid"),       # Soft emerald green
-        "MEDIUM": PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"),    # Soft amber yellow
-        "HIGH": PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")       # Soft crimson red
-    }
-    risk_font_colors = {
-        "LOW": Font(name="Segoe UI", size=10, bold=True, color="065F46"),
-        "MEDIUM": Font(name="Segoe UI", size=10, bold=True, color="92400E"),
-        "HIGH": Font(name="Segoe UI", size=10, bold=True, color="991B1B")
-    }
+    ws.row_dimensions[1].height = 26
 
     for row in range(2, ws.max_row + 1):
-        ws.row_dimensions[row].height = 22
-        risk_val = ws.cell(row=row, column=11).value  # Column 11 is Final Risk
-
+        ws.row_dimensions[row].height = 20
         for col in range(1, ws.max_column + 1):
             cell = ws.cell(row=row, column=col)
             cell.font = data_font
             cell.border = thin_border
             cell.alignment = left_align
 
-            # Center-align specific telemetry columns
-            if col in [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
-                cell.alignment = center_align
-
-            # Highlight Final Risk cell
-            if col == 11 and risk_val in risk_colors:
-                cell.fill = risk_colors[risk_val]
-                cell.font = risk_font_colors[risk_val]
-
-    # Auto-fit column widths
     for col in ws.columns:
         col_letter = get_column_letter(col[0].column)
         max_len = max(len(str(cell.value or '')) for cell in col)
-        ws.column_dimensions[col_letter].width = min(max(max_len + 3, 12), 45)
+        ws.column_dimensions[col_letter].width = min(max(max_len + 3, 12), 48)
 
-    # Freeze header row
     ws.freeze_panes = "A2"
+
+
+def style_excel(file_path: str):
+    """Apply professional aerospace styling across all workbook tabs."""
+    wb = openpyxl.load_workbook(file_path)
+
+    # Style Sheet 1: CME Event Log
+    if "CME Event Log" in wb.sheetnames or "SolarSentinel Event Log" in wb.sheetnames:
+        ws = wb["CME Event Log"] if "CME Event Log" in wb.sheetnames else wb["SolarSentinel Event Log"]
+        style_worksheet(ws, "CME Event Log", "1A365D")
+
+        # Color-code risk levels in column 11
+        risk_colors = {
+            "LOW": PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid"),
+            "MEDIUM": PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"),
+            "HIGH": PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
+        }
+        risk_fonts = {
+            "LOW": Font(name="Segoe UI", size=10, bold=True, color="065F46"),
+            "MEDIUM": Font(name="Segoe UI", size=10, bold=True, color="92400E"),
+            "HIGH": Font(name="Segoe UI", size=10, bold=True, color="991B1B")
+        }
+        for row in range(2, ws.max_row + 1):
+            cell = ws.cell(row=row, column=11)
+            val = str(cell.value or "").upper()
+            if val in risk_colors:
+                cell.fill = risk_colors[val]
+                cell.font = risk_fonts[val]
+
+    # Style Sheet 2: Asset Screening
+    if "Asset Screening" in wb.sheetnames:
+        ws = wb["Asset Screening"]
+        style_worksheet(ws, "Asset Screening", "0F766E")
+
+    # Style Sheet 3: Incident Register
+    if "Incident Register" in wb.sheetnames:
+        ws = wb["Incident Register"]
+        style_worksheet(ws, "Incident Register", "7C2D12")
+
     wb.save(file_path)
 
 
@@ -226,12 +235,74 @@ def generate_markdown_report(risk_assessments, ai_analysis, norm_events, output_
         f.write("\n".join(md))
 
 
+def build_assets_dataframe(impacts_path: str = "data/processed/asset_impacts.json") -> pd.DataFrame:
+    """Build DataFrame of screened operational assets."""
+    if not os.path.exists(impacts_path):
+        return pd.DataFrame()
+    with open(impacts_path, "r", encoding="utf-8-sig") as f:
+        data = json.load(f)
+
+    rows = []
+    for item in data:
+        eid = item.get("event_id")
+        matches = item.get("asset_matches", [])
+        for m in matches:
+            rows.append({
+                "Event ID": eid,
+                "Asset ID": m.get("asset_id"),
+                "Asset Name": m.get("name"),
+                "Domain": m.get("domain"),
+                "Criticality": m.get("criticality"),
+                "Impact Status": m.get("impact_status"),
+                "Screening Note": m.get("screening_note"),
+                "Triggering Hazards": " | ".join(m.get("triggering_factors", [])),
+                "Operator": m.get("operator"),
+                "Contact Email": m.get("contact_email"),
+                "SOP Mitigation": m.get("mitigation_sop")
+            })
+    return pd.DataFrame(rows)
+
+
+def build_incidents_dataframe(incidents_dir: str = "data/incidents") -> pd.DataFrame:
+    """Build DataFrame of operational incident registry."""
+    if not os.path.exists(incidents_dir):
+        return pd.DataFrame()
+    rows = []
+    for fname in sorted(os.listdir(incidents_dir)):
+        if fname.endswith(".json") and fname.startswith("INC-"):
+            try:
+                with open(os.path.join(incidents_dir, fname), "r", encoding="utf-8-sig") as f:
+                    inc = json.load(f)
+                    hazard = inc.get("hazard_summary", {})
+                    approval = inc.get("approval_record", {})
+                    rows.append({
+                        "Incident ID": inc.get("incident_id"),
+                        "Target Event": inc.get("event_id"),
+                        "Severity": inc.get("severity"),
+                        "Status": inc.get("status"),
+                        "Title": inc.get("title"),
+                        "NOAA Scale": hazard.get("g_scale", "G0"),
+                        "Max Kp": hazard.get("max_kp_predicted"),
+                        "Speed (km/s)": hazard.get("speed_km_s"),
+                        "Earth Arrival": hazard.get("earth_arrival_time") or "N/A",
+                        "Affected Assets": inc.get("affected_assets_count", 0),
+                        "Approval Required": "YES" if approval.get("required") else "NO",
+                        "Approval Status": approval.get("status", "N/A"),
+                        "Decided By": approval.get("decided_by") or "N/A",
+                        "Audit Entries": len(inc.get("audit_history", []))
+                    })
+            except Exception:
+                pass
+    return pd.DataFrame(rows)
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="SolarSentinel Phase 6: Logging & Reporting Layer")
     parser.add_argument("--normalized", default="data/raw/cme_normalized.json")
     parser.add_argument("--ai-analysis", default="data/processed/cme_ai_analysis.json")
     parser.add_argument("--risk-assessment", default="data/processed/risk_assessment.json")
+    parser.add_argument("--asset-impacts", default="data/processed/asset_impacts.json")
     parser.add_argument("--excel-output", default="output/logs/events_log.xlsx")
     parser.add_argument("--csv-output", default="output/logs/events_log.csv")
     parser.add_argument("--report-dir", default="output/reports/")
@@ -242,24 +313,40 @@ def main():
     print("=======================================================")
 
     risk_assessments = load_json(args.risk_assessment)
+    if not risk_assessments and os.path.exists("data/sample/risk_assessment_sample.json"):
+        risk_assessments = load_json("data/sample/risk_assessment_sample.json")
+
     ai_analysis = load_json(args.ai_analysis)
+    if not ai_analysis and os.path.exists("data/sample/cme_ai_analysis_sample.json"):
+        ai_analysis = load_json("data/sample/cme_ai_analysis_sample.json")
+
     norm_events = load_json(args.normalized)
+    if not norm_events and os.path.exists("data/sample/cme_normalized_sample.json"):
+        norm_events = load_json("data/sample/cme_normalized_sample.json")
 
     print(f"[INFO] Ingested {len(risk_assessments)} risk records.")
 
-    # 1. Build DataFrame
-    df = build_dataframe(risk_assessments, ai_analysis, norm_events)
+    # 1. Build DataFrames
+    df_events = build_dataframe(risk_assessments, ai_analysis, norm_events)
+    df_assets = build_assets_dataframe(args.asset_impacts)
+    df_incidents = build_incidents_dataframe("data/incidents")
 
     # 2. Save CSV Log
     os.makedirs(os.path.dirname(args.csv_output), exist_ok=True)
-    df.to_csv(args.csv_output, index=False, encoding="utf-8-sig")
+    df_events.to_csv(args.csv_output, index=False, encoding="utf-8-sig")
     print(f"[SUCCESS] Exported CSV Event Log to {args.csv_output}")
 
-    # 3. Save Excel Master Log
+    # 3. Save Multi-Sheet Excel Master Log
     os.makedirs(os.path.dirname(args.excel_output), exist_ok=True)
-    df.to_excel(args.excel_output, index=False, engine="openpyxl")
+    with pd.ExcelWriter(args.excel_output, engine="openpyxl") as writer:
+        df_events.to_excel(writer, sheet_name="CME Event Log", index=False)
+        if not df_assets.empty:
+            df_assets.to_excel(writer, sheet_name="Asset Screening", index=False)
+        if not df_incidents.empty:
+            df_incidents.to_excel(writer, sheet_name="Incident Register", index=False)
+
     style_excel(args.excel_output)
-    print(f"[SUCCESS] Exported & Styled Master Excel Log to {args.excel_output}")
+    print(f"[SUCCESS] Exported & Styled Multi-Tab Master Excel Log to {args.excel_output}")
 
     # 4. Generate Markdown Summary Report
     date_code = datetime.now(timezone.utc).strftime("%Y%m%d")

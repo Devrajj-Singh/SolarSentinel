@@ -114,7 +114,16 @@
             <ui:InvokeWorkflowFile.Arguments>
             </ui:InvokeWorkflowFile.Arguments>
           </ui:InvokeWorkflowFile>
-          <ui:InvokeWorkflowFile DisplayName="Step 8: Finalize Run &amp; Commit State" WorkflowFileName="FinalizeRun.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4">
+          <ui:InvokeWorkflowFile DisplayName="Step 8: Multi-Channel Alert Dispatcher" WorkflowFileName="SendNotifications.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_9">
+            <ui:InvokeWorkflowFile.Arguments>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 9: Human-in-the-Loop Approval Gate" WorkflowFileName="HandleApproval.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_10">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:Boolean" x:Key="in_autoApproveForDemo">[True]</InArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+          <ui:InvokeWorkflowFile DisplayName="Step 10: Finalize Run &amp; Commit State" WorkflowFileName="FinalizeRun.xaml" sap:VirtualizedContainerService.HintSize="450,190" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4">
             <ui:InvokeWorkflowFile.Arguments>
               <InArgument x:TypeArguments="x:String" x:Key="in_runStatus">[systemHealth]</InArgument>
             </ui:InvokeWorkflowFile.Arguments>
