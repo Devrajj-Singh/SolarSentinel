@@ -1,13 +1,13 @@
 {
   "nasa": {
-    "api_key": "YOUR_NASA_API_KEY_HERE",
-    "base_url": "https://api.nasa.gov/DONKI",
+    "donki_api_base": "https://ccmc.gsfc.nasa.gov/DONKI-API/get",
     "endpoints": {
       "cme": "/CME",
       "solar_flare": "/FLR",
       "geomagnetic_storm": "/GST"
     },
-    "default_date_range_days": 7
+    "default_date_range_days": 7,
+    "note": "DONKI API requires no authentication key as of Sep 2026 migration"
   },
   "gemini": {
     "api_key": "YOUR_GEMINI_API_KEY_HERE",
