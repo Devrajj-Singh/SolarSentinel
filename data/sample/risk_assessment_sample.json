@@ -1,0 +1,425 @@
+[
+  {
+    "event_id": "2026-10-07T13:53:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-07T13:53Z",
+    "source_location": "N10W04",
+    "is_earth_directed": true,
+    "speed_km_s": 310.0,
+    "max_kp_predicted": 4.0,
+    "earth_arrival_time": "2026-10-11T06:00Z",
+    "ai_suggested_risk": "LOW",
+    "ai_confidence_score": 0.92,
+    "ai_rationale": "Slow speed, low Kp forecast, and probable flank impact together indicate minimal geomagnetic risk.",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_EARTH_DIRECTED: Interplanetary shock heading toward Earth.",
+      "RULE_QUIET_CONDITIONS: Below geomagnetic storm threshold (Kp=4.0, Speed=310.0 km/s). G0 conditions."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055767+00:00"
+  },
+  {
+    "event_id": "2026-10-08T16:12:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-08T16:12Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 449.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055821+00:00"
+  },
+  {
+    "event_id": "2026-10-08T16:24:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-08T16:24Z",
+    "source_location": "N05W25",
+    "is_earth_directed": true,
+    "speed_km_s": 579.0,
+    "max_kp_predicted": 4.0,
+    "earth_arrival_time": "2026-10-11T22:00Z",
+    "ai_suggested_risk": "LOW",
+    "ai_confidence_score": 0.86,
+    "ai_rationale": "Moderate CME speed, Earth\u2011directed but weak shock, and a predicted Kp of 4 indicate only minor geomagnetic disturbance; no strong flare or SEP signatures were observed.",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_EARTH_DIRECTED: Interplanetary shock heading toward Earth.",
+      "RULE_QUIET_CONDITIONS: Below geomagnetic storm threshold (Kp=4.0, Speed=579.0 km/s). G0 conditions."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055844+00:00"
+  },
+  {
+    "event_id": "2026-10-08T16:53:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-08T16:53Z",
+    "source_location": "N12W20",
+    "is_earth_directed": false,
+    "speed_km_s": 723.0,
+    "max_kp_predicted": 6.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055854+00:00"
+  },
+  {
+    "event_id": "2026-10-08T18:38:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-08T18:38Z",
+    "source_location": "S16E13",
+    "is_earth_directed": false,
+    "speed_km_s": 868.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055863+00:00"
+  },
+  {
+    "event_id": "2026-10-08T20:12:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-08T20:12Z",
+    "source_location": "N15W85",
+    "is_earth_directed": false,
+    "speed_km_s": 453.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055870+00:00"
+  },
+  {
+    "event_id": "2026-10-09T00:45:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-09T00:45Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 293.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055876+00:00"
+  },
+  {
+    "event_id": "2026-10-09T07:15:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-09T07:15Z",
+    "source_location": "N15W90",
+    "is_earth_directed": false,
+    "speed_km_s": 391.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055883+00:00"
+  },
+  {
+    "event_id": "2026-10-09T08:00:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-09T08:00Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 270.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055891+00:00"
+  },
+  {
+    "event_id": "2026-10-09T14:36:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-09T14:36Z",
+    "source_location": "N15W94",
+    "is_earth_directed": false,
+    "speed_km_s": 315.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055897+00:00"
+  },
+  {
+    "event_id": "2026-10-10T08:36:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-10T08:36Z",
+    "source_location": "N16W105",
+    "is_earth_directed": false,
+    "speed_km_s": 368.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055905+00:00"
+  },
+  {
+    "event_id": "2026-10-10T12:23:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-10T12:23Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 763.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055923+00:00"
+  },
+  {
+    "event_id": "2026-10-10T16:15:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-10T16:15Z",
+    "source_location": "N08W54",
+    "is_earth_directed": false,
+    "speed_km_s": 1553.0,
+    "max_kp_predicted": 9.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055933+00:00"
+  },
+  {
+    "event_id": "2026-10-10T22:00:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-10T22:00Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 351.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055944+00:00"
+  },
+  {
+    "event_id": "2026-10-11T09:12:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-11T09:12Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 374.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055956+00:00"
+  },
+  {
+    "event_id": "2026-10-11T23:12:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-11T23:12Z",
+    "source_location": "S20E15",
+    "is_earth_directed": false,
+    "speed_km_s": 618.0,
+    "max_kp_predicted": 6.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055971+00:00"
+  },
+  {
+    "event_id": "2026-10-11T23:15:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-11T23:15Z",
+    "source_location": "S20E30",
+    "is_earth_directed": false,
+    "speed_km_s": 457.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.055984+00:00"
+  },
+  {
+    "event_id": "2026-10-12T05:09:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-12T05:09Z",
+    "source_location": "S16E23",
+    "is_earth_directed": true,
+    "speed_km_s": 741.0,
+    "max_kp_predicted": 6.0,
+    "earth_arrival_time": "2026-10-14T11:30Z",
+    "ai_suggested_risk": "MEDIUM",
+    "ai_confidence_score": 0.86,
+    "ai_rationale": "Moderate CME speed and a head\u2011on Earth impact produce a predicted Kp\u202f=\u202f6 storm, which can affect high\u2011latitude infrastructure and satellite operations. Confidence is high due to consistent multi\u2011instrument observations and modeled arrival time.",
+    "deterministic_risk": "MEDIUM",
+    "routing_action": "OPERATOR_REVIEW",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_EARTH_DIRECTED: Interplanetary shock heading toward Earth.",
+      "RULE_ELEVATED_ACTIVITY: Moderate disturbance expected (Kp=6.0, Speed=741.0 km/s). G1/G2 threshold reached."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.056003+00:00"
+  },
+  {
+    "event_id": "2026-10-12T10:09:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-12T10:09Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 351.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.056015+00:00"
+  },
+  {
+    "event_id": "2026-10-12T12:23:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-12T12:23Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 335.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.056030+00:00"
+  },
+  {
+    "event_id": "2026-10-12T19:36:00-CME-001",
+    "event_type": "CME",
+    "start_time": "2026-10-12T19:36Z",
+    "source_location": "UNKNOWN",
+    "is_earth_directed": false,
+    "speed_km_s": 365.0,
+    "max_kp_predicted": 0.0,
+    "earth_arrival_time": null,
+    "ai_suggested_risk": "UNKNOWN",
+    "ai_confidence_score": 0.0,
+    "ai_rationale": "No AI analysis available",
+    "deterministic_risk": "LOW",
+    "routing_action": "AUTO_LOG",
+    "validation_status": "PASSED",
+    "rule_triggers": [
+      "RULE_NON_EARTH_DIRECTED: Off-axis CME trajectory, no direct terrestrial impact."
+    ],
+    "evaluated_at": "2026-10-14T14:17:01.056038+00:00"
+  }
+]

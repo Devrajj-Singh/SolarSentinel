@@ -48,6 +48,8 @@ uipath/**/*.log
 # Data & Output Files
 data/raw/*
 !data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 output/logs/*
 !output/logs/.gitkeep
 output/reports/*
