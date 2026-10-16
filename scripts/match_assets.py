@@ -11,7 +11,7 @@ import argparse
 from typing import Dict, Any, List, Optional
 
 REGISTRY_FILE = "config/asset_registry.json"
-DEFAULT_INPUT = "data/processed/cme_risk_assessed.json"
+DEFAULT_INPUT = "data/processed/risk_assessment.json"
 DEFAULT_OUTPUT = "data/processed/asset_impacts.json"
 
 
@@ -174,11 +174,15 @@ def main():
     parser.add_argument("--registry", default=REGISTRY_FILE, help="Path to asset registry JSON")
     args = parser.parse_args()
 
-    if not os.path.exists(args.input):
-        print(f"[ERROR] Input file {args.input} not found.")
-        sys.exit(1)
+    input_file = args.input
+    if not os.path.exists(input_file):
+        if os.path.exists("data/sample/risk_assessment_sample.json"):
+            input_file = "data/sample/risk_assessment_sample.json"
+        else:
+            print(f"[ERROR] Input file {args.input} not found.")
+            sys.exit(1)
 
-    with open(args.input, "r", encoding="utf-8-sig") as f:
+    with open(input_file, "r", encoding="utf-8-sig") as f:
         events = json.load(f)
 
     # In case input is a single dict or dict with "assessed_events"
