@@ -1,0 +1,112 @@
+{
+  "registry_version": "2.0.0",
+  "last_updated": "2026-10-14T00:00:00Z",
+  "assets": [
+    {
+      "asset_id": "ASSET-SAT-LEO-01",
+      "name": "Aegis-1 LEO Earth Observation Constellation",
+      "domain": "SATELLITE_LEO",
+      "criticality": "HIGH",
+      "location": "550 km Sun-Synchronous Polar Orbit (97.4 deg inclination)",
+      "operator": "Aegis Constellation Operations",
+      "contact_email": "ops-leo@solarsentinel.local",
+      "primary_hazards": [
+        "Thermospheric neutral density increase",
+        "Orbital aerodynamic drag acceleration",
+        "Electrostatic surface charging"
+      ],
+      "screening_thresholds": {
+        "min_g_scale": "G2",
+        "min_kp": 6.0,
+        "min_speed_km_s": 700.0,
+        "earth_directed_required": true
+      },
+      "standard_operating_procedure": "Orient solar arrays to edge-on drag-minimization profile; increase orbit-maintenance thruster readiness; defer non-critical optical sensor deployments during high-latitude auroral oval transits."
+    },
+    {
+      "asset_id": "ASSET-SAT-GEO-02",
+      "name": "Celestia-4 Geostationary Broadcast & Telecommunications",
+      "domain": "SATELLITE_GEO",
+      "criticality": "CRITICAL",
+      "location": "35,786 km Geostationary Orbit (97.2 deg W)",
+      "operator": "Celestia Spacecom OCC",
+      "contact_email": "satcom-occ@solarsentinel.local",
+      "primary_hazards": [
+        "Deep dielectric discharge from relativistic electrons (>2 MeV)",
+        "Internal circuit electrostatic ESD events",
+        "Star tracker disorientation from energetic solar protons"
+      ],
+      "screening_thresholds": {
+        "min_g_scale": "G3",
+        "min_s_scale": "S2",
+        "min_kp": 7.0,
+        "earth_directed_required": false
+      },
+      "standard_operating_procedure": "Enable autonomous safe-hold orientation; switch attitude control to inertial gyros if optical star trackers report high noise; shed non-essential internal electric heaters to suppress bus voltage transients."
+    },
+    {
+      "asset_id": "ASSET-GRID-CAN-03",
+      "name": "Laurentian 735 kV Northern Extra-High-Voltage Grid",
+      "domain": "POWER_GRID",
+      "criticality": "CRITICAL",
+      "location": "Quebec & Northern Interconnect (Geomagnetic Latitude 65N - 72N)",
+      "operator": "Laurentian Transmission Reliability Center",
+      "contact_email": "grid-ops@solarsentinel.local",
+      "primary_hazards": [
+        "Geomagnetically Induced Currents (GIC) in grounding neutrals",
+        "Bulk power transformer half-cycle core saturation",
+        "Harmonic distortion and abnormal reactive power consumption",
+        "Potential voltage instability and tripping of protective relays"
+      ],
+      "screening_thresholds": {
+        "min_g_scale": "G3",
+        "min_kp": 7.0,
+        "min_speed_km_s": 800.0,
+        "earth_directed_required": true
+      },
+      "standard_operating_procedure": "Reduce power flow on transmission lines operating at >90% thermal limits; engage reserve static var compensators (SVCs); cap long-distance high-voltage DC tie-line transfers; alert regional transmission balancing authorities."
+    },
+    {
+      "asset_id": "ASSET-AVN-POLAR-04",
+      "name": "Transpolar Flight Corridor Polar-1 (Arctic Airway)",
+      "domain": "AVIATION",
+      "criticality": "HIGH",
+      "location": "Arctic Navigation Routes (FL330 - FL410, North of 60 deg N)",
+      "operator": "Polar Flight Dispatch & Safety Center",
+      "contact_email": "flight-dispatch@solarsentinel.local",
+      "primary_hazards": [
+        "Polar Cap Absorption (PCA) causing High-Frequency (HF) radio communications blackout",
+        "Loss of Communications (NORDO) over oceanic and arctic tracks",
+        "Elevated crew and passenger cosmic ionising radiation dosage"
+      ],
+      "screening_thresholds": {
+        "min_g_scale": "G3",
+        "min_s_scale": "S2",
+        "min_r_scale": "R2",
+        "min_kp": 6.0,
+        "earth_directed_required": true
+      },
+      "standard_operating_procedure": "Reroute scheduled transpolar flights via southern sub-polar airways; verify SATCOM CPDLC as primary communications medium; prepare step-descent flight plans to FL290 if solar radiation storm escalates to S3."
+    },
+    {
+      "asset_id": "ASSET-RADIO-OBS-05",
+      "name": "Sub-Millimeter & High-Frequency Radio Astronomy Array",
+      "domain": "RADIO_COMM_OBSERVATORY",
+      "criticality": "MEDIUM",
+      "location": "High-Altitude Plateau Radio Science Observatory",
+      "operator": "National Radio Science Operations",
+      "contact_email": "observatory-duty@solarsentinel.local",
+      "primary_hazards": [
+        "Solar radio noise bursts in L-band and S-band",
+        "Ionospheric scintillation causing phase decorrelation during interferometry"
+      ],
+      "screening_thresholds": {
+        "min_r_scale": "R2",
+        "min_g_scale": "G2",
+        "min_kp": 5.0,
+        "earth_directed_required": false
+      },
+      "standard_operating_procedure": "Stow ultra-sensitive cryogenic receiver feeds on sun-facing dishes; suspend interferometric calibration cycles; shift observing schedule to planetary radar or solar-burst observation mode."
+    }
+  ]
+}

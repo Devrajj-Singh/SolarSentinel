@@ -39,70 +39,72 @@ def run_step(step_name: str, cmd: list):
 
 
 def main():
-    print_banner("[SOLARSENTINEL] End-to-End Automated Pipeline")
+    print_banner("[SOLARSENTINEL V2] Autonomous Operations & Intelligence Pipeline")
     print(f"Execution Timestamp: {datetime.now(timezone.utc).isoformat()}")
 
-    # Check normalized input exists
-    norm_file = "data/raw/cme_normalized.json"
-    if not os.path.exists(norm_file):
-        print(f"[ERROR] Normalized input file {norm_file} not found. Run Phase 2/3 first.")
-        sys.exit(1)
-
-    # 1. Run AI Analysis Layer
+    # 1. NOAA SWPC Live Ingestion
     run_step(
-        "Phase 4: GPT-OSS 120B AI Scientific Analysis",
+        "Step 1: NOAA SWPC Real-Time Geomagnetic Ingestion",
+        [sys.executable, "scripts/fetch_noaa.py"]
+    )
+
+    # 2. Idempotent Transaction Enqueueing
+    run_step(
+        "Step 2: Idempotent Deduplication & Queue Management",
+        [sys.executable, "scripts/queue_manager.py", "enqueue", "--input", "data/raw/cme_normalized.json"]
+    )
+
+    # 3. AI Scientific Analysis Layer
+    run_step(
+        "Step 3: GPT-OSS 120B AI Scientific Analysis (Groq LPU)",
         [sys.executable, "scripts/analyze_events.py"]
     )
 
-    # 2. Run Deterministic Risk Engine
+    # 4. Deterministic Risk Engine
     run_step(
-        "Phase 5: Deterministic Risk & Decision Engine",
+        "Step 4: Deterministic Risk & Decision Engine (NOAA Scales)",
         [sys.executable, "scripts/risk_engine.py"]
     )
 
-    # 3. Run Logging & Reporting Engine
+    # 5. Asset Registry Screening Matcher
     run_step(
-        "Phase 6: Master Excel Logging & Executive Reporting",
+        "Step 5: Operational Asset Impact Screening",
+        [sys.executable, "scripts/match_assets.py"]
+    )
+
+    # 6. Incident Management Creation
+    run_step(
+        "Step 6: Space Weather Incident Dossier Generation",
+        [sys.executable, "scripts/incident_manager.py", "create-batch"]
+    )
+
+    # 7. Multi-Channel Notification Dispatcher
+    run_step(
+        "Step 7: Multi-Channel Alert Dispatch & Local Mock Inbox",
+        [sys.executable, "scripts/notify.py", "notify-all"]
+    )
+
+    # 8. Master Multi-Tab Excel Logging & Executive Report
+    run_step(
+        "Step 8: Master Excel Logging & Executive Space Weather Report",
         [sys.executable, "scripts/generate_reports.py"]
     )
 
-    # 4. Phase 7: Operational Alert Dispatch & Human-in-the-Loop Review
-    print_banner("[ALERT CENTER] Phase 7: Operational Alerts & Human Routing")
-    risk_file = "data/processed/risk_assessment.json"
-    if os.path.exists(risk_file):
-        with open(risk_file, "r", encoding="utf-8") as f:
-            assessments = json.load(f)
+    # 9. Finalize Run State
+    run_step(
+        "Step 9: State Store Commit & Metrics Finalization",
+        [sys.executable, "scripts/queue_manager.py", "finalize-run", "--status", "HEALTHY"]
+    )
 
-        elevated = [a for a in assessments if a.get("routing_action") in ("OPERATOR_REVIEW", "HUMAN_APPROVAL_REQUIRED")]
-
-        if elevated:
-            print(f"[ALERT] {len(elevated)} event(s) require operational attention:")
-            for ev in elevated:
-                eid = ev.get("event_id")
-                risk = ev.get("deterministic_risk")
-                action = ev.get("routing_action")
-                speed = ev.get("speed_km_s")
-                kp = ev.get("max_kp_predicted")
-                arr = ev.get("earth_arrival_time")
-
-                print(f"\n  [!] FLAGGED EVENT: {eid}")
-                print(f"      Severity Level : {risk}")
-                print(f"      Routing Action : {action}")
-                print(f"      Kinematics     : Speed {speed:.0f} km/s | Max Predicted Kp {kp:.1f}")
-                print(f"      Earth Arrival  : {arr}")
-                print(f"      AI Model Used  : GPT-OSS 120B (Groq LPU)")
-                print(f"      Operational Rec: Check transformer ground currents & GIC alert channels.")
-                print(f"      Status         : [PENDING OPERATOR SIGN-OFF]")
-        else:
-            print("  [OK] All events evaluated as LOW risk. Auto-logged with zero manual intervention required.")
-
-    print_banner("[SUCCESS] Pipeline Complete: All Stages Successfully Executed")
-    print("Generated Artifacts:")
-    print("  - Excel Master Log : output/logs/events_log.xlsx")
-    print("  - CSV Master Log   : output/logs/events_log.csv")
-    print("  - Executive Report : output/reports/space_weather_report_*.md")
-    print("  - Processed AI Data: data/processed/cme_ai_analysis.json")
-    print("  - Risk Assessment  : data/processed/risk_assessment.json")
+    print_banner("[SUCCESS] SolarSentinel V2 Pipeline Execution Complete")
+    print("Generated Artifacts & Output Locations:")
+    print("  * Master Excel Log   : output/logs/events_log.xlsx (3 Styled Tabs)")
+    print("  * Executive Report   : output/reports/space_weather_report_*.md")
+    print("  * Local Mock Inbox   : output/emails/ (Rendered HTML & Plaintext Alerts)")
+    print("  * Webhook Payloads   : output/audit/ (MS Teams / Slack Adaptive Cards)")
+    print("  * Incident Dossiers  : data/incidents/ (Immutable Audit Trails)")
+    print("  * Transaction Queue  : data/queue/ (Pending / In-Progress / Completed)")
+    print("  * Operations Center  : Run 'python scripts/control_center.py' for Live Dashboard")
 
 
 if __name__ == "__main__":
