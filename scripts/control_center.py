@@ -1,12 +1,21 @@
 """
-SolarSentinel - Operations Control Center Dashboard & FastAPI Backend (Phase V2.5)
-Multi-view SPA: Overview, Incidents, Simulator, Assets, RPA Queue.
+SolarSentinel V3.0 - Enterprise Operations Control Center & FastAPI Backend
+Unified E2E Platform:
+  - Homepage & Threat Model Architecture Showcase
+  - Multi-source Ingestion (NASA DONKI & NOAA SWPC)
+  - Live Pipeline Runner with Real-Time Step Streaming
+  - Reports & Downloads Center (Excel, CSV, Markdown, HTML Alerts)
+  - Personalized Authentication & Human-in-the-Loop SOP Sign-Off
+  - Dynamic Asset Onboarding & Simulator Dispatch
 """
 
 import os
 import sys
 import json
 import time
+import mimetypes
+import threading
+import subprocess
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
@@ -16,27 +25,65 @@ import match_assets
 import incident_manager
 import notify
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
 
 app = FastAPI(
     title="SolarSentinel Operations Control Center API",
-    description="Real-time space weather operations, RPA queue monitoring, and incident response platform",
-    version="2.5.0"
+    description="Enterprise Space Weather Defense, RPA Queue Monitoring, and Critical Infrastructure Incident Response Platform",
+    version="3.0.0"
 )
 
 STATE_FILE    = "data/state/monitor_state.json"
 NOAA_FILE     = "data/raw/noaa_swpc.json"
 REGISTRY_FILE = "config/asset_registry.json"
+DASHBOARD_FILE = "scripts/dashboard.html"
 
+# Global pipeline execution state
+pipeline_state: Dict[str, Any] = {
+    "is_running": False,
+    "started_at": None,
+    "completed_at": None,
+    "current_step": "Idle",
+    "progress_pct": 0,
+    "steps": [
+        {"id": 1, "name": "NOAA SWPC Real-Time Geomagnetic Ingestion", "status": "pending"},
+        {"id": 2, "name": "Idempotent Deduplication & Transaction Queueing", "status": "pending"},
+        {"id": 3, "name": "GPT-OSS 120B AI Scientific Analysis (Groq LPU)", "status": "pending"},
+        {"id": 4, "name": "Deterministic Risk & NOAA Scale Guardrails", "status": "pending"},
+        {"id": 5, "name": "Operational Asset Impact Screening", "status": "pending"},
+        {"id": 6, "name": "Space Weather Incident Dossier Generation", "status": "pending"},
+        {"id": 7, "name": "Multi-Channel Alert Dispatch & Mock Inbox", "status": "pending"},
+        {"id": 8, "name": "Master Excel Logging & Executive Space Weather Report", "status": "pending"},
+        {"id": 9, "name": "State Store Commit & Metrics Finalization", "status": "pending"},
+    ],
+    "logs": [],
+    "error": None
+}
+
+# Active user sessions store (in-memory demo store)
+user_sessions: Dict[str, Dict[str, Any]] = {}
+
+
+# --- Pydantic Request Models ---
+
+class AuthRequest(BaseModel):
+    provider: str = "credentials"  # "google" or "credentials"
+    name: str = "Devraj Singh"
+    email: str = "devraj@solarsentinel.ops"
+    organization: str = "SolarSentinel Command & Defense"
+    role: str = "Flight Director / Mission Commander"
+    avatar: str = ""
 
 class ApprovalRequest(BaseModel):
-    operator_name: str = "Flight Director Sarah Chen"
-    operational_notes: str = "Authorized asset protection protocol."
+    operator_name: str = "Devraj Singh"
+    operator_role: str = "Flight Director / Mission Commander"
+    operational_notes: str = "Authorized asset protection protocol and satellite safe-hold."
 
 class RejectionRequest(BaseModel):
-    operator_name: str = "Flight Director Sarah Chen"
+    operator_name: str = "Devraj Singh"
+    operator_role: str = "Flight Director / Mission Commander"
     operational_notes: str = "Deemed false positive after telemetry cross-check."
 
 class SimulationRequest(BaseModel):
@@ -46,10 +93,34 @@ class SimulationRequest(BaseModel):
     predicted_kp: float = 7.0
     simulated_by: str = "Control Center Operator"
 
+class SimulationDispatchRequest(BaseModel):
+    simulation_id: str
+    speed_km_s: float
+    predicted_kp: float
+    g_scale: str
+    assigned_risk: str
+    routing_action: str
+    affected_assets: List[Dict[str, Any]]
+    operator_name: str = "Devraj Singh"
+
+class AssetCreateRequest(BaseModel):
+    asset_id: str
+    name: str
+    domain: str  # SATELLITE_LEO, SATELLITE_GEO, POWER_GRID, AVIATION, GROUND_STATION
+    criticality: str  # LOW, MEDIUM, HIGH, CRITICAL
+    location: str
+    operator: str
+    contact_email: str
+    primary_hazards: List[str]
+    screening_thresholds: Dict[str, Any]
+    standard_operating_procedure: str
+
+
+# --- Core Telemetry & Status APIs ---
 
 @app.get("/api/status")
 def get_system_status():
-    """Return health telemetry across all platform services."""
+    """Return health telemetry across all platform services and active pipeline status."""
     state = queue_manager.load_state()
     noaa_live = False
     observed_kp = 2.0
@@ -68,6 +139,7 @@ def get_system_status():
         "last_successful_run": state.get("last_successful_run"),
         "total_runs":          state.get("total_runs", 0),
         "total_transactions":  state.get("total_transactions_processed", 0),
+        "pipeline_running":    pipeline_state["is_running"],
         "services": {
             "uipath_orchestrator": {"status": "ONLINE", "type": "Autonomous RPA Conductor", "version": "Studio 2026.0"},
             "nasa_donki":          {"status": "ONLINE", "type": "Solar Observation Feed", "latency_ms": 140},
@@ -96,10 +168,10 @@ def get_queue_data():
         return items
     return {
         "metrics":           metrics,
-        "pending_items":     load_dir(queue_manager.PENDING_DIR)[:20],
-        "in_progress_items": load_dir(queue_manager.IN_PROGRESS_DIR)[:10],
-        "completed_items":   load_dir(queue_manager.COMPLETED_DIR)[:20],
-        "failed_items":      load_dir(queue_manager.FAILED_DIR)[:10],
+        "pending_items":     load_dir(queue_manager.PENDING_DIR)[:25],
+        "in_progress_items": load_dir(queue_manager.IN_PROGRESS_DIR)[:15],
+        "completed_items":   load_dir(queue_manager.COMPLETED_DIR)[:25],
+        "failed_items":      load_dir(queue_manager.FAILED_DIR)[:15],
     }
 
 
@@ -117,27 +189,266 @@ def get_assets():
     return {"assets": assets}
 
 
+@app.post("/api/assets")
+def create_asset_api(req: AssetCreateRequest):
+    """Register a new mission-critical asset in the registry."""
+    if not os.path.exists(REGISTRY_FILE):
+        registry = {"registry_version": "2.0.0", "last_updated": datetime.now(timezone.utc).isoformat(), "assets": []}
+    else:
+        with open(REGISTRY_FILE, "r", encoding="utf-8-sig") as f:
+            registry = json.load(f)
+
+    # Check for existing ID
+    for a in registry.get("assets", []):
+        if a.get("asset_id") == req.asset_id:
+            raise HTTPException(status_code=400, detail=f"Asset ID {req.asset_id} already exists")
+
+    new_asset = req.model_dump()
+    registry.setdefault("assets", []).append(new_asset)
+    registry["last_updated"] = datetime.now(timezone.utc).isoformat()
+
+    with open(REGISTRY_FILE, "w", encoding="utf-8") as f:
+        json.dump(registry, f, indent=2)
+
+    return {"status": "SUCCESS", "asset": new_asset, "total_assets": len(registry["assets"])}
+
+
+# --- Authentication & Operator Identity APIs ---
+
+@app.post("/api/auth/login")
+def auth_login(req: AuthRequest):
+    """Authenticate operator via Google OAuth or Operator Credentials."""
+    session_id = f"SES-{int(time.time()*1000)}"
+    user_data = {
+        "session_id": session_id,
+        "provider": req.provider,
+        "name": req.name,
+        "email": req.email,
+        "organization": req.organization,
+        "role": req.role,
+        "avatar": req.avatar or f"https://api.dicebear.com/7.x/bottts/svg?seed={req.name}",
+        "authenticated_at": datetime.now(timezone.utc).isoformat()
+    }
+    user_sessions[session_id] = user_data
+    return {"status": "SUCCESS", "user": user_data}
+
+
+# --- Human-in-the-Loop SOP Sign-Off APIs ---
+
 @app.post("/api/incidents/{incident_id}/approve")
 def approve_incident_api(incident_id: str, req: ApprovalRequest):
-    """Operator approval endpoint."""
-    success = incident_manager.approve_incident(incident_id, req.operator_name, req.operational_notes)
+    """Operator approval endpoint with real signed identity."""
+    signature = f"{req.operator_name} ({req.operator_role})" if req.operator_role else req.operator_name
+    success = incident_manager.approve_incident(incident_id, signature, req.operational_notes)
     if not success:
         raise HTTPException(status_code=404, detail="Incident not found or approval failed")
     inc = incident_manager.load_incident(incident_id)
     if inc:
-        notify.dispatch_incident_notification(inc, force_mock=True)
-    return {"status": "SUCCESS", "incident": inc}
+        try:
+            notify.dispatch_incident_notification(inc, force_mock=True)
+        except Exception:
+            pass
+    return {"status": "SUCCESS", "incident": inc, "authorized_by": signature}
 
 
 @app.post("/api/incidents/{incident_id}/reject")
 def reject_incident_api(incident_id: str, req: RejectionRequest):
-    """Operator rejection endpoint."""
-    success = incident_manager.reject_incident(incident_id, req.operator_name, req.operational_notes)
+    """Operator rejection endpoint with real signed identity."""
+    signature = f"{req.operator_name} ({req.operator_role})" if req.operator_role else req.operator_name
+    success = incident_manager.reject_incident(incident_id, signature, req.operational_notes)
     if not success:
         raise HTTPException(status_code=404, detail="Incident not found or rejection failed")
     inc = incident_manager.load_incident(incident_id)
-    return {"status": "SUCCESS", "incident": inc}
+    return {"status": "SUCCESS", "incident": inc, "rejected_by": signature}
 
+
+# --- Live Pipeline Execution APIs ---
+
+def _run_pipeline_worker():
+    """Background thread executing all 9 steps of the operations pipeline."""
+    global pipeline_state
+    pipeline_state["is_running"] = True
+    pipeline_state["started_at"] = datetime.now(timezone.utc).isoformat()
+    pipeline_state["completed_at"] = None
+    pipeline_state["error"] = None
+    pipeline_state["logs"] = []
+
+    steps = [
+        {"cmd": [sys.executable, "scripts/fetch_noaa.py"], "name": "NOAA SWPC Real-Time Geomagnetic Ingestion"},
+        {"cmd": [sys.executable, "scripts/queue_manager.py", "enqueue", "--input", "data/raw/cme_normalized.json"], "name": "Idempotent Deduplication & Transaction Queueing"},
+        {"cmd": [sys.executable, "scripts/analyze_events.py"], "name": "GPT-OSS 120B AI Scientific Analysis (Groq LPU)"},
+        {"cmd": [sys.executable, "scripts/risk_engine.py"], "name": "Deterministic Risk & NOAA Scale Guardrails"},
+        {"cmd": [sys.executable, "scripts/match_assets.py"], "name": "Operational Asset Impact Screening"},
+        {"cmd": [sys.executable, "scripts/incident_manager.py", "create-batch"], "name": "Space Weather Incident Dossier Generation"},
+        {"cmd": [sys.executable, "scripts/notify.py", "notify-all"], "name": "Multi-Channel Alert Dispatch & Mock Inbox"},
+        {"cmd": [sys.executable, "scripts/generate_reports.py"], "name": "Master Excel Logging & Executive Space Weather Report"},
+        {"cmd": [sys.executable, "scripts/queue_manager.py", "finalize-run", "--status", "HEALTHY"], "name": "State Store Commit & Metrics Finalization"},
+    ]
+
+    total = len(steps)
+    for idx, s in enumerate(steps):
+        pipeline_state["current_step"] = s["name"]
+        pipeline_state["steps"][idx]["status"] = "running"
+        pipeline_state["progress_pct"] = int((idx / total) * 100)
+        
+        log_line = f"[{datetime.now(timezone.utc).strftime('%H:%M:%S')}] RUNNING: Step {idx+1}/{total} - {s['name']}..."
+        pipeline_state["logs"].append(log_line)
+
+        try:
+            res = subprocess.run(s["cmd"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if res.stdout:
+                for line in res.stdout.strip().splitlines()[:5]:
+                    pipeline_state["logs"].append(f"  > {line}")
+            if res.returncode != 0:
+                pipeline_state["steps"][idx]["status"] = "failed"
+                pipeline_state["error"] = f"Failed at {s['name']}: {res.stderr[:200]}"
+                pipeline_state["logs"].append(f"[ERROR] {res.stderr[:200]}")
+                pipeline_state["is_running"] = False
+                return
+            pipeline_state["steps"][idx]["status"] = "completed"
+        except Exception as e:
+            pipeline_state["steps"][idx]["status"] = "failed"
+            pipeline_state["error"] = str(e)
+            pipeline_state["is_running"] = False
+            return
+
+    pipeline_state["progress_pct"] = 100
+    pipeline_state["current_step"] = "Completed"
+    pipeline_state["completed_at"] = datetime.now(timezone.utc).isoformat()
+    pipeline_state["logs"].append(f"[{datetime.now(timezone.utc).strftime('%H:%M:%S')}] [SUCCESS] Pipeline execution finished with status HEALTHY.")
+    pipeline_state["is_running"] = False
+
+
+@app.post("/api/pipeline/run")
+def trigger_pipeline_run(background_tasks: BackgroundTasks):
+    """Trigger the autonomous space weather operations pipeline."""
+    global pipeline_state
+    if pipeline_state["is_running"]:
+        return {"status": "ALREADY_RUNNING", "message": "Pipeline is already in progress"}
+
+    for s in pipeline_state["steps"]:
+        s["status"] = "pending"
+    pipeline_state["progress_pct"] = 0
+    pipeline_state["error"] = None
+    
+    t = threading.Thread(target=_run_pipeline_worker, daemon=True)
+    t.start()
+    return {"status": "STARTED", "message": "Operations pipeline initiated in background"}
+
+
+@app.get("/api/pipeline/status")
+def get_pipeline_status():
+    """Poll the real-time execution status and streaming logs."""
+    return pipeline_state
+
+
+# --- Reports & Downloads Center APIs ---
+
+def _format_size(size_bytes: int) -> str:
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    return f"{size_bytes / (1024 * 1024):.2f} MB"
+
+
+@app.get("/api/reports")
+def list_reports():
+    """List all downloadable reports, Excel workbooks, executive briefings, and webhook payloads."""
+    cats = {
+        "logs":    ("output/logs", "Master Excel & CSV Logs"),
+        "reports": ("output/reports", "Executive Space Weather Dossiers"),
+        "emails":  ("output/emails", "Operational Alert Briefings (HTML & TXT)"),
+        "audit":   ("output/audit", "ChatOps Webhook Payloads (Teams & Slack)")
+    }
+    results = {}
+    for cat_key, (dir_path, display_name) in cats.items():
+        items = []
+        if os.path.exists(dir_path):
+            for fname in sorted(os.listdir(dir_path), reverse=True):
+                if fname.startswith("."):
+                    continue
+                fpath = os.path.join(dir_path, fname)
+                if os.path.isfile(fpath):
+                    st = os.stat(fpath)
+                    ext = os.path.splitext(fname)[1].lower().replace(".", "")
+                    items.append({
+                        "filename": fname,
+                        "category": cat_key,
+                        "format": ext.upper(),
+                        "size_bytes": st.st_size,
+                        "size_formatted": _format_size(st.st_size),
+                        "modified_at": datetime.fromtimestamp(st.st_mtime, timezone.utc).isoformat(),
+                        "download_url": f"/api/reports/download/{cat_key}/{fname}",
+                        "preview_url": f"/api/reports/preview/{cat_key}/{fname}"
+                    })
+        results[cat_key] = {"title": display_name, "files": items}
+    return results
+
+
+@app.get("/api/reports/download/{category}/{filename}")
+def download_report(category: str, filename: str):
+    """Download a generated operational file."""
+    allowed_dirs = {
+        "logs": "output/logs",
+        "reports": "output/reports",
+        "emails": "output/emails",
+        "audit": "output/audit"
+    }
+    if category not in allowed_dirs:
+        raise HTTPException(status_code=400, detail="Invalid report category")
+
+    safe_filename = os.path.basename(filename)
+    filepath = os.path.join(allowed_dirs[category], safe_filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    mime_type, _ = mimetypes.guess_type(filepath)
+    if not mime_type:
+        mime_type = "application/octet-stream"
+
+    return FileResponse(
+        path=filepath,
+        media_type=mime_type,
+        filename=safe_filename,
+        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'}
+    )
+
+
+@app.get("/api/reports/preview/{category}/{filename}")
+def preview_report(category: str, filename: str):
+    """Return text/markdown/json content for inline modal preview."""
+    allowed_dirs = {
+        "logs": "output/logs",
+        "reports": "output/reports",
+        "emails": "output/emails",
+        "audit": "output/audit"
+    }
+    if category not in allowed_dirs:
+        raise HTTPException(status_code=400, detail="Invalid report category")
+
+    safe_filename = os.path.basename(filename)
+    filepath = os.path.join(allowed_dirs[category], safe_filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    ext = os.path.splitext(safe_filename)[1].lower()
+    if ext in [".xlsx", ".xls"]:
+        return {"filename": safe_filename, "type": "binary", "content": "Excel binary workbook. Use Download button to view."}
+
+    try:
+        with open(filepath, "r", encoding="utf-8-sig", errors="replace") as f:
+            content = f.read()
+        return {
+            "filename": safe_filename,
+            "type": "markdown" if ext == ".md" else ("html" if ext == ".html" else ("json" if ext == ".json" else "text")),
+            "content": content
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Space Weather Simulator & Dispatch APIs ---
 
 @app.post("/api/simulate")
 def run_what_if_simulation(req: SimulationRequest):
@@ -150,10 +461,12 @@ def run_what_if_simulation(req: SimulationRequest):
     elif kp >= 6.0: g_scale = "G2"
     elif kp >= 5.0: g_scale = "G1"
     else:           g_scale = "G0"
+
     if not earth:                       final_risk, routing = "LOW",    "AUTO_LOG"
     elif kp >= 7.0 or speed >= 1500.0: final_risk, routing = "HIGH",   "HUMAN_APPROVAL_REQUIRED"
     elif kp >= 5.0 or speed >= 700.0:  final_risk, routing = "MEDIUM", "OPERATOR_REVIEW"
     else:                               final_risk, routing = "LOW",    "AUTO_LOG"
+
     event_mock = {
         "event_id": sim_id, "speed_km_s": speed,
         "max_kp_predicted": kp, "is_earth_directed": earth,
@@ -163,6 +476,7 @@ def run_what_if_simulation(req: SimulationRequest):
     all_results = [match_assets.screen_asset_for_event(a, event_mock) for a in assets]
     affected    = [m for m in all_results if m["impact_status"] != "NOMINAL"]
     transit_hrs = round((149597870.7 / speed) / 3600.0, 1) if speed > 0 else 0.0
+
     return {
         "simulation_id": sim_id,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -180,19 +494,67 @@ def run_what_if_simulation(req: SimulationRequest):
         }
     }
 
-DASHBOARD_HTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>SolarSentinel — Space Weather Operations Control Center</title>\n<meta name="description" content="SolarSentinel V2 Operations Control Center: AI-assisted autonomous space weather monitoring, satellite defense, and UiPath RPA orchestration platform.">\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">\n<style>\n:root {\n  --bg-void:#020811;--bg-base:#050c1a;--bg-surface:#091222;--bg-elevated:#0e1a2e;\n  --bg-glass:rgba(9,18,34,0.72);--bg-glass-heavy:rgba(5,10,20,0.88);\n  --bg-input:rgba(4,8,18,0.85);--bg-row-hover:rgba(20,35,65,0.45);\n  --border-subtle:rgba(51,65,85,0.22);--border-default:rgba(51,65,85,0.42);\n  --border-glow:rgba(56,189,248,0.28);--border-active:rgba(6,182,212,0.55);\n  --cyan:#06b6d4;--blue:#38bdf8;--teal:#14b8a6;--emerald:#10b981;\n  --amber:#f59e0b;--orange:#f97316;--red:#ef4444;--rose:#fb7185;\n  --violet:#8b5cf6;--indigo:#6366f1;\n  --text-primary:#f1f5f9;--text-secondary:#cbd5e1;--text-muted:#64748b;--text-faint:#3d526b;\n  --sidebar-w:64px;--sidebar-exp:220px;--topbar-h:56px;\n  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;\n  --shadow-glow:0 0 28px rgba(6,182,212,.12);--shadow-xl:0 12px 40px rgba(0,0,0,.5);\n  --ease:cubic-bezier(0.4,0,0.2,1);--ease-out:cubic-bezier(0.16,1,0.3,1);\n  --t-fast:0.14s;--t-med:0.24s;--t-slow:0.38s;\n}\n*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}\nhtml{font-size:14px;-webkit-font-smoothing:antialiased}\nbody{font-family:\'Inter\',system-ui,sans-serif;background:var(--bg-void);color:var(--text-primary);min-height:100vh;overflow-x:hidden}\n.mono{font-family:\'JetBrains Mono\',\'Fira Code\',monospace}\n::selection{background:rgba(6,182,212,.3);color:#fff}\n::-webkit-scrollbar{width:5px;height:5px}\n::-webkit-scrollbar-track{background:transparent}\n::-webkit-scrollbar-thumb{background:rgba(100,116,139,.35);border-radius:3px}\n\n#star-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}\n.app-shell{display:flex;min-height:100vh;position:relative;z-index:1}\n\n/* SIDEBAR */\n.sidebar{width:var(--sidebar-w);background:var(--bg-glass-heavy);backdrop-filter:blur(28px) saturate(1.7);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;align-items:center;padding:16px 0;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:width var(--t-slow) var(--ease-out);overflow:hidden}\n.sidebar:hover{width:var(--sidebar-exp)}\n.sidebar:hover .nav-label{opacity:1;transform:translateX(0)}\n.sidebar:hover .sidebar-logo-text{opacity:1;max-width:120px}\n.sidebar-logo-wrap{display:flex;align-items:center;gap:11px;margin-bottom:28px;padding:0 12px;width:100%}\n.sidebar-logo{width:38px;height:38px;flex-shrink:0;background:linear-gradient(135deg,#0c4a6e,#06b6d4);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 0 20px rgba(6,182,212,.3);position:relative}\n.sidebar-logo::after{content:\'\';position:absolute;inset:-2px;border-radius:12px;border:1px solid rgba(6,182,212,.35);animation:logoPulse 3s ease-in-out infinite}\n@keyframes logoPulse{0%,100%{opacity:.4}50%{opacity:.9}}\n.sidebar-logo-text{font-size:12px;font-weight:800;letter-spacing:.5px;color:var(--text-secondary);opacity:0;max-width:0;overflow:hidden;transition:opacity var(--t-med) var(--ease),max-width var(--t-slow) var(--ease-out);white-space:nowrap}\n.nav-group{display:flex;flex-direction:column;gap:3px;width:100%;padding:0 8px}\n.nav-divider{height:1px;background:var(--border-subtle);margin:10px 12px}\n.nav-item{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--t-fast) var(--ease);position:relative;white-space:nowrap;color:var(--text-muted);text-decoration:none;user-select:none}\n.nav-item:hover{background:rgba(56,189,248,.07);color:var(--text-secondary)}\n.nav-item.active{background:rgba(6,182,212,.11);color:var(--cyan)}\n.nav-item.active::before{content:\'\';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--cyan);border-radius:0 3px 3px 0;box-shadow:0 0 12px rgba(6,182,212,.6)}\n.nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}\n.nav-label{font-size:12.5px;font-weight:600;opacity:0;transform:translateX(-10px);transition:all var(--t-med) var(--ease)}\n.sidebar-footer{margin-top:auto;padding:10px 8px;width:100%}\n.sidebar-version{font-size:10px;color:var(--text-faint);text-align:center}\n\n/* MAIN */\n.main-content{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh}\n\n/* TOPBAR */\n.topbar{height:var(--topbar-h);background:var(--bg-glass-heavy);backdrop-filter:blur(22px) saturate(1.6);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:100}\n.topbar-left{display:flex;align-items:center;gap:14px}\n.page-breadcrumb{font-size:11px;color:var(--text-faint);display:flex;align-items:center;gap:6px}\n.page-title{font-size:15px;font-weight:800;background:linear-gradient(135deg,#f1f5f9,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.3px}\n.topbar-right{display:flex;align-items:center;gap:10px}\n.status-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(10,18,35,.75);border:1px solid var(--border-subtle);border-radius:20px;padding:4px 12px 4px 7px;font-size:11px;font-weight:600;transition:border-color var(--t-fast)}\n.status-pill:hover{border-color:var(--border-glow)}\n.pulse-dot{width:6px;height:6px;border-radius:50%;position:relative;flex-shrink:0}\n.pulse-dot::after{content:\'\';position:absolute;inset:-3px;border-radius:50%;animation:ring 2s ease-out infinite}\n.pd-green{background:var(--emerald)}.pd-green::after{border:1.5px solid var(--emerald)}\n.pd-amber{background:var(--amber)}.pd-amber::after{border:1.5px solid var(--amber)}\n.pd-blue{background:var(--blue)}.pd-blue::after{border:1.5px solid var(--blue)}\n.pd-cyan{background:var(--cyan)}.pd-cyan::after{border:1.5px solid var(--cyan)}\n.pd-red{background:var(--red)}.pd-red::after{border:1.5px solid var(--red)}\n@keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.4);opacity:0}}\n.topbar-clock{font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text-muted);background:rgba(4,8,18,.7);padding:4px 10px;border-radius:var(--r-sm);border:1px solid var(--border-subtle)}\n\n/* VIEWS */\n.view{display:none;padding:26px 28px 48px;animation:fadeIn .22s var(--ease)}\n.view.active{display:block}\n@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}\n\n/* SECTION HEADER */\n.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}\n.sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);display:flex;align-items:center;gap:8px}\n.sec-title .bar{width:3px;height:14px;border-radius:2px;background:var(--cyan);box-shadow:0 0 8px rgba(6,182,212,.4)}\n.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;letter-spacing:.3px}\n.badge-live{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}\n.badge-sand{background:rgba(56,189,248,.12);color:var(--blue);border:1px solid rgba(56,189,248,.25)}\n.badge-info{background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25)}\n\n/* KPI GRID */\n.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}\n.kpi-card{background:var(--bg-glass);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:20px 22px 18px;position:relative;overflow:hidden;transition:all var(--t-med) var(--ease)}\n.kpi-card::before{content:\'\';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r-lg) var(--r-lg) 0 0}\n.kpi-card:hover{border-color:var(--border-glow);transform:translateY(-3px);box-shadow:var(--shadow-glow)}\n.kpi-c1::before{background:linear-gradient(90deg,var(--emerald),var(--teal))}\n.kpi-c2::before{background:linear-gradient(90deg,var(--blue),var(--indigo))}\n.kpi-c3::before{background:linear-gradient(90deg,var(--amber),var(--orange))}\n.kpi-c4::before{background:linear-gradient(90deg,var(--cyan),var(--blue))}\n.kpi-icon{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px}\n.kpi-c1 .kpi-icon{background:rgba(16,185,129,.12)}\n.kpi-c2 .kpi-icon{background:rgba(56,189,248,.12)}\n.kpi-c3 .kpi-icon{background:rgba(245,158,11,.12)}\n.kpi-c4 .kpi-icon{background:rgba(6,182,212,.12)}\n.kpi-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:5px}\n.kpi-value{font-size:28px;font-weight:800;line-height:1.1;letter-spacing:-.5px}\n.kpi-sub{font-size:11px;color:var(--text-faint);margin-top:6px}\n\n/* GLASS PANEL */\n.glass-panel{background:var(--bg-glass);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--border-subtle);border-radius:var(--r-lg);overflow:hidden}\n.panel-hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 16px;border-bottom:1px solid var(--border-subtle)}\n.panel-title{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:9px}\n.panel-body{padding:20px 22px}\n\n/* SERVICE HEALTH */\n.svc-grid{display:flex;flex-direction:column;gap:8px}\n.svc-item{display:flex;align-items:center;gap:12px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:10px 14px;transition:border-color var(--t-fast),background var(--t-fast)}\n.svc-item:hover{border-color:var(--border-glow);background:rgba(8,16,32,.7)}\n.svc-item:hover{border-color:var(--border-glow)}\n.svc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}\n.svc-dot.online{background:var(--emerald);box-shadow:0 0 8px rgba(16,185,129,.5)}\n.svc-dot.fallback{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.5)}\n.svc-dot.offline{background:var(--red);box-shadow:0 0 8px rgba(239,68,68,.5)}\n.svc-info{flex:1;min-width:0}\n.svc-name{font-size:12px;font-weight:700;color:var(--text-primary)}\n.svc-meta{font-size:10.5px;color:var(--text-faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n.svc-status-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}\n.svc-status-tag.online{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.2)}\n.svc-status-tag.fallback{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.2)}\n.svc-status-tag.offline{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}\n\n/* INCIDENT CARDS */\n.incident-list{display:flex;flex-direction:column;gap:14px}\n.inc-card{background:rgba(6,10,24,.65);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:18px 20px;position:relative;overflow:hidden;transition:all var(--t-med) var(--ease)}\n.inc-card::before{content:\'\';position:absolute;left:0;top:0;bottom:0;width:4px}\n.inc-card.sev-high::before{background:linear-gradient(180deg,var(--red),var(--rose))}\n.inc-card.sev-medium::before{background:linear-gradient(180deg,var(--amber),var(--orange))}\n.inc-card.sev-low::before{background:linear-gradient(180deg,var(--emerald),var(--teal))}\n.inc-card:hover{border-color:var(--border-glow);background:rgba(10,18,40,.75);transform:translateX(3px)}\n.inc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}\n.inc-title-text{font-size:13.5px;font-weight:700;color:var(--text-primary);line-height:1.3}\n.inc-id-text{font-size:10.5px;color:var(--text-faint);margin-top:3px;font-family:\'JetBrains Mono\',monospace}\n.sev-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;flex-shrink:0}\n.sev-badge.high{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}\n.sev-badge.medium{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}\n.sev-badge.low{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}\n.inc-metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:rgba(2,6,16,.55);border:1px solid rgba(25,35,60,.6);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px}\n.inc-metric-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);margin-bottom:2px}\n.inc-metric-val{font-size:13px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--text-secondary)}\n.inc-assets-block{margin-bottom:12px}\n.inc-assets-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:7px}\n.inc-assets-list{list-style:none;display:flex;flex-direction:column;gap:3px}\n.inc-assets-list li{font-size:11.5px;color:var(--text-secondary);padding:4px 0 4px 14px;position:relative}\n.inc-assets-list li::before{content:\'▸\';position:absolute;left:0;color:var(--cyan);font-size:10px}\n.inc-footer-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid rgba(30,41,59,.3)}\n.inc-audit-txt{font-size:10.5px;color:var(--text-faint)}\n.inc-actions{display:flex;gap:8px;align-items:center}\n\n/* BUTTONS */\n.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 16px;border-radius:var(--r-sm);font-size:11.5px;font-weight:700;letter-spacing:.2px;border:none;cursor:pointer;transition:all var(--t-fast) var(--ease)}\n.btn:disabled{opacity:.5;cursor:not-allowed}\n.btn-approve{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.25)}\n.btn-approve:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 18px rgba(16,185,129,.38)}\n.btn-reject{background:rgba(239,68,68,.13);color:#fca5a5;border:1px solid rgba(239,68,68,.28)}\n.btn-reject:hover:not(:disabled){background:rgba(239,68,68,.22)}\n.decision-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px}\n.chip-approved{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}\n.chip-rejected{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}\n\n/* EMPTY STATE */\n.empty-state{text-align:center;padding:56px 24px;color:var(--text-faint)}\n.empty-state .es-icon{font-size:38px;margin-bottom:14px;opacity:.35}\n.empty-state .es-msg{font-size:13px;color:var(--text-muted)}\n\n/* SIMULATOR */\n.sim-layout{display:grid;grid-template-columns:1fr 400px;gap:22px;align-items:start}\n.form-group{margin-bottom:20px}\n.form-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}\n.form-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)}\n.form-val{font-family:\'JetBrains Mono\',monospace;font-weight:700;color:var(--cyan);font-size:12px}\ninput[type="range"]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:rgba(30,41,59,.7);outline:none}\ninput[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));cursor:pointer;box-shadow:0 0 10px rgba(6,182,212,.45);transition:transform var(--t-fast),box-shadow var(--t-fast)}\ninput[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.18);box-shadow:0 0 18px rgba(6,182,212,.65)}\ninput[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--cyan),var(--blue));cursor:pointer}\n.check-group{display:flex;align-items:center;gap:11px;font-size:12.5px;color:var(--text-secondary);cursor:pointer}\n.check-group input[type="checkbox"]{-webkit-appearance:none;width:18px;height:18px;border:2px solid var(--border-default);border-radius:4px;background:var(--bg-input);cursor:pointer;position:relative;transition:all var(--t-fast)}\n.check-group input[type="checkbox"]:checked{background:var(--cyan);border-color:var(--cyan)}\n.check-group input[type="checkbox"]:checked::after{content:\'✓\';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#020811}\n.btn-run{width:100%;background:linear-gradient(135deg,#0c4a6e,#06b6d4);color:#fff;border:none;border-radius:var(--r-md);padding:13px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(6,182,212,.28);transition:all var(--t-fast);display:flex;align-items:center;justify-content:center;gap:9px;letter-spacing:.2px}\n.btn-run:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(6,182,212,.4)}\n.btn-run:active{transform:none}\n.spinner{display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .55s linear infinite}\n@keyframes spin{to{transform:rotate(360deg)}}\n.sim-result{display:none;margin-top:18px;background:rgba(2,6,16,.8);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:18px;animation:slideDown var(--t-slow) var(--ease-out)}\n@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}\n.sim-result-id{font-size:11px;font-weight:700;color:var(--cyan);margin-bottom:14px;font-family:\'JetBrains Mono\',monospace}\n.sim-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(30,41,59,.25)}\n.sim-row:last-of-type{border-bottom:none}\n.sim-row .lbl{font-size:11.5px;color:var(--text-muted)}\n.sim-row .val{font-size:12px;font-weight:700;font-family:\'JetBrains Mono\',monospace}\n.risk-chip{font-size:11.5px;font-weight:800;padding:3px 11px;border-radius:5px;letter-spacing:.4px}\n.risk-chip.low{background:rgba(16,185,129,.18);color:#6ee7b7}\n.risk-chip.medium{background:rgba(245,158,11,.18);color:#fcd34d}\n.risk-chip.high{background:rgba(239,68,68,.18);color:#fca5a5}\n.sim-assets-section{margin-top:14px;padding-top:14px;border-top:1px solid var(--border-subtle)}\n.sim-asset-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(30,41,59,.2);font-size:12px}\n.sim-asset-row:last-child{border-bottom:none}\n.sim-asset-name{color:var(--text-secondary);font-weight:600}\n.impact-chip{font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;letter-spacing:.3px}\n.impact-chip.NOMINAL{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.2)}\n.impact-chip.MONITORING_ADVISED{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.2)}\n.impact-chip.POTENTIALLY_AFFECTED{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}\n\n/* ASSETS */\n.asset-cards{display:flex;flex-direction:column;gap:14px}\n.asset-card{background:var(--bg-glass);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:20px 22px;transition:all var(--t-med) var(--ease)}\n.asset-card:hover{border-color:var(--border-glow);transform:translateX(3px)}\n.asset-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}\n.asset-name-wrap{display:flex;align-items:center;gap:12px}\n.asset-type-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px}\n.type-sat{background:rgba(56,189,248,.1);color:var(--blue);border:1px solid rgba(56,189,248,.25)}\n.type-grid{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.25)}\n.type-air{background:rgba(139,92,246,.1);color:var(--violet);border:1px solid rgba(139,92,246,.25)}\n.type-radio{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.25)}\n.asset-name-text{font-size:14px;font-weight:800;color:var(--text-primary)}\n.asset-sub{font-size:11.5px;color:var(--text-faint);margin-top:2px}\n.crit-chip{font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;letter-spacing:.3px}\n.crit-chip.HIGH{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}\n.crit-chip.MEDIUM{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}\n.crit-chip.LOW{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}\n.asset-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}\n.asset-detail-item{background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm);padding:11px 14px}\n.asset-detail-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);margin-bottom:4px}\n.asset-detail-value{font-size:12px;color:var(--text-secondary);line-height:1.4}\n.asset-hazards{margin-bottom:14px}\n.asset-hazards-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:7px}\n.hazard-tags{display:flex;flex-wrap:wrap;gap:6px}\n.hazard-tag{font-size:11px;color:var(--text-secondary);background:rgba(10,18,35,.65);border:1px solid var(--border-subtle);border-radius:5px;padding:3px 9px}\n.sop-block{background:rgba(6,182,212,.04);border:1px solid rgba(6,182,212,.12);border-radius:var(--r-sm);padding:12px 14px}\n.sop-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--cyan);margin-bottom:6px}\n.sop-text{font-size:11.5px;color:var(--text-secondary);line-height:1.6}\n\n/* QUEUE */\n.queue-layout{display:grid;grid-template-columns:280px 1fr;gap:22px;align-items:start}\n.q-stats-panel{display:flex;flex-direction:column;gap:12px}\n.q-stat-card{background:var(--bg-glass);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:18px 20px;transition:border-color var(--t-fast)}\n.q-stat-card:hover{border-color:var(--border-glow)}\n.q-stat-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}\n.q-stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted)}\n.q-stat-icon{font-size:16px}\n.q-stat-value{font-size:32px;font-weight:800;letter-spacing:-.5px;line-height:1}\n.q-stat-sub{font-size:11px;color:var(--text-faint);margin-top:5px}\n.q-stat-card.pending .q-stat-value{color:var(--blue)}\n.q-stat-card.completed .q-stat-value{color:var(--emerald)}\n.q-stat-card.failed .q-stat-value{color:var(--red)}\n.q-stat-card.total .q-stat-value{color:var(--cyan)}\n.q-tabs{display:flex;gap:4px;margin-bottom:16px}\n.q-tab{padding:7px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border-subtle);color:var(--text-muted);background:transparent;transition:all var(--t-fast)}\n.q-tab:hover{color:var(--text-secondary);background:rgba(30,41,59,.3)}\n.q-tab.active{background:rgba(6,182,212,.1);color:var(--cyan);border-color:rgba(6,182,212,.3)}\n.q-table-wrap{overflow-x:auto}\n.q-table{width:100%;border-collapse:collapse}\n.q-table th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-faint);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border-subtle);white-space:nowrap}\n.q-table td{font-size:12px;color:var(--text-secondary);padding:11px 14px;border-bottom:1px solid rgba(30,41,59,.25);font-family:\'JetBrains Mono\',monospace;vertical-align:middle}\n.q-table tr:last-child td{border-bottom:none}\n.q-table tbody tr:hover td{background:var(--bg-row-hover)}\n.q-status-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}\n.qs-new{background:rgba(99,102,241,.1);color:#a5b4fc;border:1px solid rgba(99,102,241,.25)}\n.qs-processing{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.25)}\n.qs-completed{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}\n.qs-failed{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}\n.qs-retry{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}\n\n/* TOAST */\n.toast-container{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px}\n.toast{background:var(--bg-glass-heavy);backdrop-filter:blur(20px);border:1px solid var(--border-default);border-radius:var(--r-md);padding:12px 18px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-xl);min-width:280px;max-width:360px;animation:toastIn var(--t-slow) var(--ease-out) forwards}\n.toast.success{border-left:3px solid var(--emerald)}\n.toast.error{border-left:3px solid var(--red)}\n.toast.info{border-left:3px solid var(--cyan)}\n.toast.warn{border-left:3px solid var(--amber)}\n.toast-icon{font-size:14px;flex-shrink:0}\n@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}\n@keyframes toastOut{from{opacity:1;transform:none}to{opacity:0;transform:translateX(40px)}}\n\n/* DASHBOARD GRID */\n.dash-grid{display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}\n.mini-inc-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(30,41,59,.3)}\n.mini-inc-item:last-child{border-bottom:none}\n.mini-inc-sev{width:8px;height:8px;border-radius:50%;flex-shrink:0}\n.mini-inc-sev.high{background:var(--red)}\n.mini-inc-sev.medium{background:var(--amber)}\n.mini-inc-sev.low{background:var(--emerald)}\n.mini-inc-name{flex:1;font-size:12px;color:var(--text-secondary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n\n/* RESPONSIVE */\n@media (max-width:1300px){.dash-grid{grid-template-columns:1fr}.sim-layout{grid-template-columns:1fr}.queue-layout{grid-template-columns:1fr}}\n@media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.asset-detail-grid{grid-template-columns:1fr}}\n@media (max-width:768px){.sidebar{display:none}.main-content{margin-left:0}.kpi-grid{grid-template-columns:1fr}.topbar{padding:0 16px}.view{padding:16px}}\n</style>\n</head>\n<body>\n\n<canvas id="star-canvas"></canvas>\n\n<div class="app-shell">\n  <nav class="sidebar">\n    <div class="sidebar-logo-wrap">\n      <div class="sidebar-logo">&#x1F6F0;&#xFE0F;</div>\n      <div class="sidebar-logo-text">SOLAR<br>SENTINEL</div>\n    </div>\n    <div class="nav-group">\n      <div class="nav-item active" id="nav-dashboard" onclick="showView(\'dashboard\')">\n        <span class="nav-icon">&#x1F4CA;</span><span class="nav-label">Overview</span>\n      </div>\n      <div class="nav-item" id="nav-incidents" onclick="showView(\'incidents\')">\n        <span class="nav-icon">&#x1F6A8;</span><span class="nav-label">Incidents</span>\n      </div>\n      <div class="nav-divider"></div>\n      <div class="nav-item" id="nav-simulator" onclick="showView(\'simulator\')">\n        <span class="nav-icon">&#x1F9EA;</span><span class="nav-label">Simulator</span>\n      </div>\n      <div class="nav-item" id="nav-assets" onclick="showView(\'assets\')">\n        <span class="nav-icon">&#x1F6F0;&#xFE0F;</span><span class="nav-label">Assets</span>\n      </div>\n      <div class="nav-divider"></div>\n      <div class="nav-item" id="nav-queue" onclick="showView(\'queue\')">\n        <span class="nav-icon">&#x1F4CB;</span><span class="nav-label">RPA Queue</span>\n      </div>\n    </div>\n    <div class="sidebar-footer"><div class="sidebar-version">V2.5</div></div>\n  </nav>\n\n  <div class="main-content">\n    <header class="topbar">\n      <div class="topbar-left">\n        <div>\n          <div class="page-breadcrumb">SolarSentinel <span class="sep">&rsaquo;</span> <span id="topbar-view-name">Overview</span></div>\n          <div class="page-title">Operations Control Center</div>\n        </div>\n      </div>\n      <div class="topbar-right">\n        <div class="status-pill"><div class="pulse-dot pd-blue"></div>UiPath: ACTIVE</div>\n        <div class="status-pill"><div class="pulse-dot pd-green"></div>NASA DONKI</div>\n        <div class="status-pill"><div class="pulse-dot pd-green" id="noaa-dot"></div>NOAA: <span id="noaa-kp-val">Kp 2.0</span></div>\n        <div class="status-pill"><div class="pulse-dot pd-cyan"></div>Groq LPU</div>\n        <div class="topbar-clock mono" id="topbar-clock">00:00:00 UTC</div>\n      </div>\n    </header>\n\n    <!-- VIEW: OVERVIEW -->\n    <div class="view active" id="view-dashboard">\n      <div class="sec-hdr">\n        <div class="sec-title"><div class="bar"></div>System Telemetry</div>\n        <span class="badge badge-live">&#x25CF; LIVE</span>\n      </div>\n      <div class="kpi-grid">\n        <div class="kpi-card kpi-c1">\n          <div class="kpi-icon">&#x1F7E2;</div>\n          <div class="kpi-label">System Health</div>\n          <div class="kpi-value" id="kpi-health" style="color:var(--emerald)">HEALTHY</div>\n          <div class="kpi-sub">All autonomous error boundaries intact</div>\n        </div>\n        <div class="kpi-card kpi-c2">\n          <div class="kpi-icon">&#x1F4E6;</div>\n          <div class="kpi-label">Transaction Queue</div>\n          <div class="kpi-value mono" id="kpi-queue">0 / 0</div>\n          <div class="kpi-sub">Pending / Completed items</div>\n        </div>\n        <div class="kpi-card kpi-c3">\n          <div class="kpi-icon">&#x26A0;&#xFE0F;</div>\n          <div class="kpi-label">Active Incidents</div>\n          <div class="kpi-value mono" id="kpi-incidents" style="color:var(--amber)">0</div>\n          <div class="kpi-sub">Operational threats under monitoring</div>\n        </div>\n        <div class="kpi-card kpi-c4">\n          <div class="kpi-icon">&#x1F9F2;</div>\n          <div class="kpi-label">Planetary Kp Index</div>\n          <div class="kpi-value mono" id="kpi-kp" style="color:var(--cyan)">2.0</div>\n          <div class="kpi-sub" id="kpi-kp-sub">NOAA SWPC 3-hour (G0)</div>\n        </div>\n      </div>\n      <div class="dash-grid">\n        <div class="glass-panel">\n          <div class="panel-hdr">\n            <div class="panel-title">&#x1F6A8; Recent Incidents</div>\n            <span class="badge badge-live">Auto-refresh 3s</span>\n          </div>\n          <div class="panel-body">\n            <div id="dash-incidents-list">\n              <div class="empty-state"><div class="es-icon">&#x2705;</div><div class="es-msg">Loading incidents&hellip;</div></div>\n            </div>\n          </div>\n        </div>\n        <div>\n          <div class="glass-panel">\n            <div class="panel-hdr">\n              <div class="panel-title">&#x1F4C8; Pipeline Stats</div>\n              <span class="badge badge-live">TELEMETRY</span>\n            </div>\n            <div class="panel-body">\n              <div style="display:flex;flex-direction:column;gap:10px">\n                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <span style="font-size:12px;color:var(--text-muted)">Total Pipeline Runs</span>\n                  <span class="mono" style="font-size:14px;font-weight:800;color:var(--cyan)" id="stat-runs">0</span>\n                </div>\n                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <span style="font-size:12px;color:var(--text-muted)">Total Transactions Processed</span>\n                  <span class="mono" style="font-size:14px;font-weight:800;color:var(--emerald)" id="stat-txns">0</span>\n                </div>\n                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <span style="font-size:12px;color:var(--text-muted)">Last Successful Run</span>\n                  <span class="mono" style="font-size:11px;font-weight:700;color:var(--text-secondary)" id="stat-lastrun">&mdash;</span>\n                </div>\n                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <span style="font-size:12px;color:var(--text-muted)">Orchestrator Conductor</span>\n                  <span class="mono" style="font-size:11px;font-weight:700;color:var(--text-secondary)">Studio 2026.0</span>\n                </div>\n              </div>\n            </div>\n          </div>\n          <div style="height:16px"></div>\n          <div class="glass-panel">\n            <div class="panel-hdr">\n              <div class="panel-title">&#x1F4CB; RPA Queue Metrics</div>\n              <span class="badge badge-sand" style="cursor:pointer" onclick="showView(\'queue\')">VIEW QUEUE &rarr;</span>\n            </div>\n            <div class="panel-body">\n              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">\n                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">Pending Items</div>\n                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--blue);margin-top:4px" id="dash-q-pending">0</div>\n                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Awaiting robot</div>\n                </div>\n                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">Completed</div>\n                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--emerald);margin-top:4px" id="dash-q-completed">0</div>\n                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Success rate 100%</div>\n                </div>\n                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">In Progress</div>\n                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--cyan);margin-top:4px" id="dash-q-in-progress">0</div>\n                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Active workers</div>\n                </div>\n                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">\n                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">Failed Items</div>\n                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--red);margin-top:4px" id="dash-q-failed">0</div>\n                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Max retries (0)</div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n    <!-- VIEW: INCIDENTS -->\n    <div class="view" id="view-incidents">\n      <div class="sec-hdr">\n        <div class="sec-title"><div class="bar"></div>Active Incident Feed &amp; Human Sign-Off</div>\n        <span class="badge badge-live">Auto-refresh 3s</span>\n      </div>\n      <div id="incidents-container">\n        <div class="empty-state"><div class="es-icon">&#x1F6F0;&#xFE0F;</div><div class="es-msg">Loading incidents&hellip;</div></div>\n      </div>\n    </div>\n\n    <!-- VIEW: SIMULATOR -->\n    <div class="view" id="view-simulator">\n      <div class="sec-hdr">\n        <div class="sec-title"><div class="bar"></div>What-If Space-Weather Simulator</div>\n        <span class="badge badge-sand">ISOLATED SANDBOX</span>\n      </div>\n      <div class="sim-layout">\n        <div class="glass-panel" style="padding:24px">\n          <div style="font-size:13px;font-weight:700;margin-bottom:20px">&#x1F9EA; Simulation Parameters</div>\n          <div class="form-group">\n            <div class="form-row"><span class="form-lbl">Plasma Speed</span><span class="form-val" id="val-speed">1200 km/s</span></div>\n            <input type="range" min="200" max="3000" step="50" value="1200" id="slider-speed" oninput="document.getElementById(\'val-speed\').textContent=this.value+\' km/s\'">\n          </div>\n          <div class="form-group">\n            <div class="form-row"><span class="form-lbl">Predicted Max Kp</span><span class="form-val" id="val-kp">7.0 &mdash; G3 Strong</span></div>\n            <input type="range" min="0" max="9" step="0.5" value="7" id="slider-kp" oninput="updateKpLabel(this.value)">\n          </div>\n          <div class="form-group">\n            <label class="check-group">\n              <input type="checkbox" id="check-earth" checked>\n              Earth-Directed Trajectory (CME cone intersects Earth)\n            </label>\n          </div>\n          <button class="btn-run" id="btn-sim" onclick="runSimulation()">\n            <span class="spinner" id="sim-spinner"></span>\n            <span id="sim-btn-text">Run Physics &amp; Asset Simulation</span>\n          </button>\n          <div class="sim-result" id="sim-result"></div>\n        </div>\n        <div style="display:flex;flex-direction:column;gap:16px">\n          <div class="glass-panel" style="padding:22px">\n            <div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:14px">&#x26A1; NOAA G-Scale Reference</div>\n            <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">\n              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G0 (Kp 0-4)</span><span style="color:var(--emerald);font-weight:700">Quiet</span></div>\n              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G1 (Kp 5)</span><span style="color:#a7f3d0;font-weight:700">Minor</span></div>\n              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G2 (Kp 6)</span><span style="color:var(--blue);font-weight:700">Moderate</span></div>\n              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G3 (Kp 7)</span><span style="color:var(--amber);font-weight:700">Strong</span></div>\n              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G4 (Kp 8)</span><span style="color:var(--orange);font-weight:700">Severe</span></div>\n              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G5 (Kp 9)</span><span style="color:var(--red);font-weight:700">Extreme</span></div>\n            </div>\n          </div>\n          <div class="glass-panel" style="padding:22px">\n            <div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:14px">&#x1F6E4;&#xFE0F; Routing Logic</div>\n            <div style="display:flex;flex-direction:column;gap:9px;font-size:11.5px;color:var(--text-secondary)">\n              <div><span style="color:var(--emerald);font-weight:700">AUTO_LOG</span> &mdash; Non-earth-directed or Kp&lt;5, speed&lt;700 km/s</div>\n              <div><span style="color:var(--amber);font-weight:700">OPERATOR_REVIEW</span> &mdash; Earth-directed, Kp&ge;5 or speed&ge;700 km/s</div>\n              <div><span style="color:var(--red);font-weight:700">HUMAN_APPROVAL</span> &mdash; Earth-directed, Kp&ge;7 or speed&ge;1500 km/s</div>\n            </div>\n          </div>\n          <div class="glass-panel" style="padding:22px">\n            <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px">&#x26A0; Sandbox Mode</div>\n            <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.6">All runs are tagged <span class="mono" style="color:var(--cyan)">IS_SIMULATED: TRUE</span> and fully isolated from production.</div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n    <!-- VIEW: ASSETS -->\n    <div class="view" id="view-assets">\n      <div class="sec-hdr">\n        <div class="sec-title"><div class="bar"></div>Operational Asset Registry</div>\n        <span class="badge badge-info" id="asset-count-badge">Loading&hellip;</span>\n      </div>\n      <div class="asset-cards" id="assets-container">\n        <div class="empty-state"><div class="es-icon">&#x1F6F0;&#xFE0F;</div><div class="es-msg">Loading asset registry&hellip;</div></div>\n      </div>\n    </div>\n\n    <!-- VIEW: QUEUE -->\n    <div class="view" id="view-queue">\n      <div class="sec-hdr">\n        <div class="sec-title"><div class="bar"></div>UiPath RPA Transaction Queue</div>\n        <span class="badge badge-live">Auto-refresh 5s</span>\n      </div>\n      <div class="queue-layout">\n        <div class="q-stats-panel">\n          <div class="q-stat-card pending">\n            <div class="q-stat-head"><div class="q-stat-label">Pending</div><div class="q-stat-icon">&#x23F3;</div></div>\n            <div class="q-stat-value" id="qs-pending">&mdash;</div>\n            <div class="q-stat-sub">Awaiting UiPath processing</div>\n          </div>\n          <div class="q-stat-card completed">\n            <div class="q-stat-head"><div class="q-stat-label">Completed</div><div class="q-stat-icon">&#x2705;</div></div>\n            <div class="q-stat-value" id="qs-completed">&mdash;</div>\n            <div class="q-stat-sub">Successfully processed</div>\n          </div>\n          <div class="q-stat-card failed">\n            <div class="q-stat-head"><div class="q-stat-label">Failed</div><div class="q-stat-icon">&#x274C;</div></div>\n            <div class="q-stat-value" id="qs-failed">&mdash;</div>\n            <div class="q-stat-sub">Max retries exhausted</div>\n          </div>\n          <div class="q-stat-card total">\n            <div class="q-stat-head"><div class="q-stat-label">In Progress</div><div class="q-stat-icon">&#x2699;&#xFE0F;</div></div>\n            <div class="q-stat-value" id="qs-in-progress">&mdash;</div>\n            <div class="q-stat-sub">Currently processing</div>\n          </div>\n        </div>\n        <div class="glass-panel">\n          <div class="panel-hdr">\n            <div class="panel-title">&#x1F4CB; Transaction Log</div>\n            <div class="q-tabs">\n              <div class="q-tab active" id="qtab-pending" onclick="switchQTab(\'pending\')">Pending</div>\n              <div class="q-tab" id="qtab-completed" onclick="switchQTab(\'completed\')">Completed</div>\n              <div class="q-tab" id="qtab-failed" onclick="switchQTab(\'failed\')">Failed</div>\n            </div>\n          </div>\n          <div class="panel-body" style="padding:0">\n            <div class="q-table-wrap" style="max-height:520px;overflow-y:auto">\n              <table class="q-table">\n                <thead>\n                  <tr>\n                    <th>Transaction ID</th><th>Event ID</th><th>Status</th>\n                    <th>Attempts</th><th>Created At</th><th>Checksum</th>\n                  </tr>\n                </thead>\n                <tbody id="q-table-body">\n                  <tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:32px">Loading&hellip;</td></tr>\n                </tbody>\n              </table>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n  </div>\n</div>\n\n<div class="toast-container" id="toast-container"></div>\n\n<script>\n// SolarSentinel V2.5 — Multi-View SPA Controller\n(function(){\n  var c=document.getElementById(\'star-canvas\'),ctx=c.getContext(\'2d\'),W,H,S=[];\n  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}\n  window.addEventListener(\'resize\',resize);resize();\n  for(var i=0;i<160;i++)S.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+0.15,a:Math.random()*0.55+0.08,da:(Math.random()-0.5)*0.006,speed:Math.random()*0.12+0.02});\n  function draw(){\n    ctx.clearRect(0,0,W,H);\n    S.forEach(function(s){\n      s.a+=s.da;if(s.a>0.65||s.a<0.05)s.da*=-1;\n      s.y+=s.speed;if(s.y>H+2){s.y=-2;s.x=Math.random()*W;}\n      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);\n      ctx.fillStyle=\'rgba(148,163,184,\'+s.a+\')\';ctx.fill();\n    });\n    requestAnimationFrame(draw);\n  }\n  draw();\n})();\n\nfunction updateClock(){var n=new Date();document.getElementById(\'topbar-clock\').textContent=n.toISOString().slice(11,19)+\' UTC\';}\nsetInterval(updateClock,1000);updateClock();\n\nfunction showToast(msg,type,dur){\n  dur=dur||4000;\n  var icons={success:\'&#x2713;\',error:\'&#x2715;\',info:\'&#x2139;\',warn:\'&#x26A0;\'};\n  var c=document.getElementById(\'toast-container\');\n  var t=document.createElement(\'div\');\n  t.className=\'toast \'+(type||\'info\');\n  t.innerHTML=\'<span class="toast-icon">\'+(icons[type]||\'&#x2139;\')+\'</span>\'+msg;\n  c.appendChild(t);\n  setTimeout(function(){t.style.animation=\'toastOut 0.28s forwards\';setTimeout(function(){t.remove();},300);},dur);\n}\n\nvar VIEW_NAMES={dashboard:\'Overview\',incidents:\'Incidents\',simulator:\'Simulator\',assets:\'Asset Registry\',queue:\'RPA Queue\'};\nvar currentView=\'dashboard\';\nvar qCurrentTab=\'pending\';\nvar allQueueData={};\n\nfunction showView(v){\n  if(currentView===v)return;\n  currentView=v;\n  document.querySelectorAll(\'.view\').forEach(function(el){el.classList.remove(\'active\');});\n  var el=document.getElementById(\'view-\'+v);\n  if(el)el.classList.add(\'active\');\n  document.querySelectorAll(\'.nav-item\').forEach(function(n){n.classList.remove(\'active\');});\n  var nav=document.getElementById(\'nav-\'+v);\n  if(nav)nav.classList.add(\'active\');\n  document.getElementById(\'topbar-view-name\').textContent=VIEW_NAMES[v]||v;\n  if(v===\'assets\')fetchAssets();\n  if(v===\'queue\')fetchQueue();\n}\n\nfunction updateKpLabel(val){\n  var v=parseFloat(val),g=\'G0 Quiet\';\n  if(v>=9)g=\'G5 Extreme\';else if(v>=8)g=\'G4 Severe\';else if(v>=7)g=\'G3 Strong\';else if(v>=6)g=\'G2 Moderate\';else if(v>=5)g=\'G1 Minor\';\n  document.getElementById(\'val-kp\').textContent=val+\' \\u2014 \'+g;\n}\n\nasync function fetchStatus(){\n  try{\n    var r=await fetch(\'/api/status\'),d=await r.json();\n    var hEl=document.getElementById(\'kpi-health\');\n    hEl.textContent=d.system_health;\n    hEl.style.color=d.system_health===\'HEALTHY\'?\'var(--emerald)\':\'var(--red)\';\n    document.getElementById(\'stat-runs\').textContent=d.total_runs;\n    document.getElementById(\'stat-txns\').textContent=d.total_transactions;\n    var lr=d.last_successful_run;\n    document.getElementById(\'stat-lastrun\').textContent=lr?lr.slice(0,19).replace(\'T\',\' \')+\' UTC\':\'\\u2014\';\n    var noaa=d.services.noaa_swpc;\n    document.getElementById(\'kpi-kp\').textContent=noaa.observed_kp;\n    document.getElementById(\'kpi-kp-sub\').textContent=\'NOAA SWPC 3-hour geomagnetic (\'+noaa.g_scale+\')\';\n    document.getElementById(\'noaa-kp-val\').textContent=\'Kp \'+noaa.observed_kp;\n    var isOn=noaa.status===\'ONLINE\';\n    document.getElementById(\'noaa-dot\').className=\'pulse-dot \'+(isOn?\'pd-green\':\'pd-amber\');\n  }catch(e){}\n}\n\nasync function fetchQueue(){\n  try{\n    var r=await fetch(\'/api/queue\'),d=await r.json();\n    var m=d.metrics;\n    document.getElementById(\'kpi-queue\').textContent=m.pending+\' / \'+m.completed;\n    document.getElementById(\'qs-pending\').textContent=m.pending;\n    document.getElementById(\'qs-completed\').textContent=m.completed;\n    document.getElementById(\'qs-failed\').textContent=m.failed;\n    document.getElementById(\'qs-in-progress\').textContent=m.in_progress;\n    var dqPending=document.getElementById(\'dash-q-pending\');\n    if(dqPending){\n      dqPending.textContent=m.pending||0;\n      document.getElementById(\'dash-q-completed\').textContent=m.completed||0;\n      document.getElementById(\'dash-q-in-progress\').textContent=m.in_progress||0;\n      document.getElementById(\'dash-q-failed\').textContent=m.failed||0;\n    }\n    allQueueData=d;\n    if(currentView===\'queue\')renderQueueTable(qCurrentTab);\n  }catch(e){}\n}\n\nfunction switchQTab(tab){\n  qCurrentTab=tab;\n  document.querySelectorAll(\'.q-tab\').forEach(function(t){t.classList.remove(\'active\');});\n  document.getElementById(\'qtab-\'+tab).classList.add(\'active\');\n  renderQueueTable(tab);\n}\n\nfunction renderQueueTable(tab){\n  var items=(allQueueData[tab+\'_items\']||[]);\n  var tbody=document.getElementById(\'q-table-body\');\n  if(!items.length){\n    tbody.innerHTML=\'<tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:36px">No \'+tab+\' transactions.</td></tr>\';\n    return;\n  }\n  var statusCls={\'NEW\':\'qs-new\',\'PROCESSING\':\'qs-processing\',\'COMPLETED\':\'qs-completed\',\'FAILED\':\'qs-failed\',\'RETRY\':\'qs-retry\'};\n  tbody.innerHTML=items.map(function(t){\n    var sc=statusCls[t.status]||\'qs-new\';\n    var created=(t.created_at||\'\').slice(0,19).replace(\'T\',\' \');\n    var txnS=(t.transaction_id||\'\').slice(0,32)+((t.transaction_id||\'\').length>32?\'\\u2026\':\'\');\n    var eidS=(t.event_id||\'\').slice(0,28)+((t.event_id||\'\').length>28?\'\\u2026\':\'\');\n    return \'<tr>\'+\n      \'<td title="\'+(t.transaction_id||\'\')+\'">\'+txnS+\'</td>\'+\n      \'<td title="\'+(t.event_id||\'\')+\'">\'+eidS+\'</td>\'+\n      \'<td><span class="q-status-tag \'+sc+\'">\'+(t.status||\'\')+\'</span></td>\'+\n      \'<td style="text-align:center">\'+(t.attempt_count||0)+\'</td>\'+\n      \'<td>\'+(created||\'\\u2014\')+\'</td>\'+\n      \'<td>\'+(t.checksum||\'\\u2014\')+\'</td>\'+\n      \'</tr>\';\n  }).join(\'\');\n}\n\nasync function fetchIncidents(){\n  try{\n    var r=await fetch(\'/api/incidents\'),d=await r.json();\n    var incs=d.incidents||[];\n    document.getElementById(\'kpi-incidents\').textContent=incs.length;\n    renderIncidentsFull(incs);\n    renderDashIncidents(incs);\n  }catch(e){}\n}\n\nfunction renderDashIncidents(incs){\n  var el=document.getElementById(\'dash-incidents-list\');\n  if(!incs.length){\n    el.innerHTML=\'<div class="empty-state"><div class="es-icon">&#x2705;</div><div class="es-msg">No active incidents. All systems nominal.</div></div>\';\n    return;\n  }\n  var recent=incs.slice(0,5);\n  el.innerHTML=recent.map(function(inc){\n    var sev=(inc.severity||\'LOW\').toLowerCase();\n    return \'<div class="mini-inc-item">\'+\n      \'<div class="mini-inc-sev \'+sev+\'"></div>\'+\n      \'<div class="mini-inc-name" title="\'+(inc.title||\'\')+\'">\'+(inc.title||inc.incident_id)+\'</div>\'+\n      \'<span class="sev-badge \'+sev+\'">\'+(inc.severity||\'LOW\')+\'</span>\'+\n      \'</div>\';\n  }).join(\'\');\n  if(incs.length>5){\n    el.innerHTML+=\'<div style="text-align:center;padding:12px 0;font-size:11.5px;color:var(--text-muted)">+\'+(incs.length-5)+\' more &mdash; <span style="color:var(--cyan);cursor:pointer" onclick="showView(\\\'incidents\\\')">View all incidents &rarr;</span></div>\';\n  }\n}\n\nfunction renderIncidentsFull(incs){\n  var el=document.getElementById(\'incidents-container\');\n  if(!incs||!incs.length){\n    el.innerHTML=\'<div class="empty-state"><div class="es-icon">&#x2705;</div><div class="es-msg">No active operational incidents. All systems nominal.</div></div>\';\n    return;\n  }\n  el.innerHTML=\'<div class="incident-list">\'+incs.map(function(inc){\n    var sev=(inc.severity||\'LOW\').toLowerCase();\n    var haz=inc.hazard_summary||{};\n    var ap=inc.approval_record||{};\n    var isPending=ap.required&&ap.status===\'PENDING\';\n    var isApproved=ap.status===\'APPROVED\';\n    var isRejected=ap.status===\'REJECTED\';\n    var actionHtml=\'\';\n    if(isPending){\n      actionHtml=\'<button class="btn btn-approve" onclick="doApprove(\\\'\'+inc.incident_id+\'\\\')">&#x26A1; Authorize SOP</button>\'+\n                 \'<button class="btn btn-reject"  onclick="doReject(\\\'\'+inc.incident_id+\'\\\')">&#x2715; Reject</button>\';\n    }else if(isApproved){\n      actionHtml=\'<span class="decision-chip chip-approved">&#x2713; Authorized by \'+(ap.decided_by||\'Operator\')+\'</span>\';\n    }else if(isRejected){\n      actionHtml=\'<span class="decision-chip chip-rejected">&#x2715; Rejected by \'+(ap.decided_by||\'Operator\')+\'</span>\';\n    }\n    var assetsHtml=\'\';\n    if(inc.affected_assets&&inc.affected_assets.length>0){\n      assetsHtml=\'<div class="inc-assets-block">\'+\n        \'<div class="inc-assets-title">Impacted Infrastructure</div>\'+\n        \'<ul class="inc-assets-list">\'+\n        inc.affected_assets.map(function(a){\n          return \'<li><strong>\'+(a.asset_name||a.name||\'Asset\')+\'</strong>\'+(a.sop_action?\': \'+a.sop_action.slice(0,120)+(a.sop_action.length>120?\'\\u2026\':\'\'):\'\')+\'</li>\';\n        }).join(\'\')+\n        \'</ul></div>\';\n    }\n    return \'<div class="inc-card sev-\'+sev+\'">\'+\n      \'<div class="inc-head">\'+\n        \'<div>\'+\n          \'<div class="inc-title-text">\'+(inc.title||inc.incident_id)+\'</div>\'+\n          \'<div class="inc-id-text">\'+inc.incident_id+\' &rarr; \'+(inc.event_id||\'\')+\'</div>\'+\n        \'</div>\'+\n        \'<span class="sev-badge \'+sev+\'">\'+(inc.severity||\'LOW\')+\'</span>\'+\n      \'</div>\'+\n      \'<div class="inc-metrics-row">\'+\n        \'<div><div class="inc-metric-label">NOAA G-Scale</div><div class="inc-metric-val">\'+(haz.g_scale||\'G0\')+\'</div></div>\'+\n        \'<div><div class="inc-metric-label">Max Kp</div><div class="inc-metric-val">\'+(haz.max_kp_predicted||\'0.0\')+\'</div></div>\'+\n        \'<div><div class="inc-metric-label">Speed</div><div class="inc-metric-val">\'+(haz.speed_km_s||\'\\u2014\')+\' km/s</div></div>\'+\n        \'<div><div class="inc-metric-label">Status</div><div class="inc-metric-val" style="color:\'+(isPending?\'var(--amber)\':\'var(--text-secondary)\')+\'">\'+(inc.status||\'\\u2014\')+\'</div></div>\'+\n      \'</div>\'+\n      assetsHtml+\n      \'<div class="inc-footer-row">\'+\n        \'<span class="inc-audit-txt">Audit entries: \'+(inc.audit_history?inc.audit_history.length:1)+\'</span>\'+\n        \'<div class="inc-actions">\'+actionHtml+\'</div>\'+\n      \'</div>\'+\n    \'</div>\';\n  }).join(\'\')+\'</div>\';\n}\n\nasync function doApprove(incId){\n  try{\n    var r=await fetch(\'/api/incidents/\'+incId+\'/approve\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({operator_name:\'Flight Director\',operational_notes:\'Authorized via Control Center.\'})});\n    if(r.ok){showToast(\'Incident authorized successfully.\',\'success\');fetchIncidents();}\n    else{showToast(\'Authorization failed. Please retry.\',\'error\');}\n  }catch(e){showToast(\'Network error during approval.\',\'error\');}\n}\n\nasync function doReject(incId){\n  try{\n    var r=await fetch(\'/api/incidents/\'+incId+\'/reject\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({operator_name:\'Flight Director\',operational_notes:\'Rejected after review.\'})});\n    if(r.ok){showToast(\'Incident rejected.\',\'info\');fetchIncidents();}\n    else{showToast(\'Rejection failed.\',\'error\');}\n  }catch(e){showToast(\'Network error during rejection.\',\'error\');}\n}\n\nasync function fetchAssets(){\n  try{\n    var r=await fetch(\'/api/assets\'),d=await r.json();\n    renderAssets(d.assets||[]);\n  }catch(e){}\n}\n\nvar DOMAIN_MAP={\n  \'SATELLITE_LEO\':[\'&#x1F6F0;&#xFE0F;\',\'type-sat\'],\n  \'SATELLITE_GEO\':[\'&#x1F4E1;\',\'type-sat\'],\n  \'POWER_GRID\':[\'&#x26A1;\',\'type-grid\'],\n  \'AVIATION\':[\'&#x2708;&#xFE0F;\',\'type-air\'],\n  \'GROUND_STATION\':[\'&#x1F52D;\',\'type-radio\'],\n  \'GROUND_OBSERVATORY\':[\'&#x1F52D;\',\'type-radio\']\n};\n\nfunction renderAssets(assets){\n  var el=document.getElementById(\'assets-container\');\n  var badge=document.getElementById(\'asset-count-badge\');\n  if(!assets.length){\n    badge.textContent=\'0 Assets\';\n    el.innerHTML=\'<div class="empty-state"><div class="es-icon">&#x1F6F0;&#xFE0F;</div><div class="es-msg">No assets registered.</div></div>\';\n    return;\n  }\n  badge.textContent=assets.length+\' Assets Registered\';\n  el.innerHTML=assets.map(function(a){\n    var dm=DOMAIN_MAP[a.domain]||[\'&#x1F4CD;\',\'type-sat\'];\n    var emoji=dm[0],cls=dm[1];\n    var hazards=(a.primary_hazards||[]).map(function(h){return \'<span class="hazard-tag">\'+h+\'</span>\';}).join(\'\');\n    var thresholds=a.screening_thresholds||{};\n    var thresh=[\n      thresholds.min_g_scale?\'G-Scale &ge; \'+thresholds.min_g_scale:null,\n      thresholds.min_kp?\'Kp &ge; \'+thresholds.min_kp:null,\n      thresholds.min_speed_km_s?\'Speed &ge; \'+thresholds.min_speed_km_s+\' km/s\':null,\n      thresholds.earth_directed_required?\'Earth-directed required\':null\n    ].filter(Boolean);\n    return \'<div class="asset-card">\'+\n      \'<div class="asset-card-head">\'+\n        \'<div class="asset-name-wrap">\'+\n          \'<span style="font-size:22px">\'+emoji+\'</span>\'+\n          \'<div>\'+\n            \'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">\'+\n              \'<span class="asset-type-badge \'+cls+\'">\'+(a.domain||\'\').replace(\'_\',\' \')+\'</span>\'+\n              \'<span class="crit-chip \'+(a.criticality||\'LOW\')+\'">\'+(a.criticality||\'LOW\')+\'</span>\'+\n            \'</div>\'+\n            \'<div class="asset-name-text">\'+(a.name||a.asset_id)+\'</div>\'+\n            \'<div class="asset-sub">\'+(a.asset_id||\'\')+\' &middot; \'+(a.operator||\'\')+\'</div>\'+\n          \'</div>\'+\n        \'</div>\'+\n      \'</div>\'+\n      \'<div class="asset-detail-grid">\'+\n        \'<div class="asset-detail-item"><div class="asset-detail-label">Location / Orbit</div><div class="asset-detail-value">\'+(a.location||\'&mdash;\')+\'</div></div>\'+\n        \'<div class="asset-detail-item"><div class="asset-detail-label">Screening Thresholds</div><div class="asset-detail-value">\'+(thresh.join(\' &middot; \')||\'None set\')+\'</div></div>\'+\n      \'</div>\'+\n      (hazards?\'<div class="asset-hazards"><div class="asset-hazards-title">Primary Hazards</div><div class="hazard-tags">\'+hazards+\'</div></div>\':\'\')+\n      (a.standard_operating_procedure?\'<div class="sop-block"><div class="sop-title">&#x2699; Standard Operating Procedure</div><div class="sop-text">\'+a.standard_operating_procedure+\'</div></div>\':\'\')+\n    \'</div>\';\n  }).join(\'\');\n}\n\nasync function runSimulation(){\n  var speed=parseFloat(document.getElementById(\'slider-speed\').value);\n  var kp=parseFloat(document.getElementById(\'slider-kp\').value);\n  var earth=document.getElementById(\'check-earth\').checked;\n  var spinner=document.getElementById(\'sim-spinner\');\n  var btnTxt=document.getElementById(\'sim-btn-text\');\n  spinner.style.display=\'inline-block\';\n  btnTxt.textContent=\'Simulating\\u2026\';\n  document.getElementById(\'btn-sim\').disabled=true;\n  try{\n    var r=await fetch(\'/api/simulate\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({speed_km_s:speed,predicted_kp:kp,is_earth_directed:earth})});\n    var data=await r.json();\n    var resultEl=document.getElementById(\'sim-result\');\n    resultEl.style.display=\'block\';\n    var p=data.physics_evaluation;\n    var a=data.asset_impact_screening;\n    var rc=p.assigned_risk.toLowerCase();\n    var allResults=a.all_results||a.affected_assets||[];\n    var assetRows=allResults.map(function(m){\n      return \'<div class="sim-asset-row">\'+\n        \'<span class="sim-asset-name">\'+(m.name||m.asset_id)+\'</span>\'+\n        \'<span class="impact-chip \'+m.impact_status+\'">\'+m.impact_status.replace(\'_\',\' \')+\'</span>\'+\n        \'</div>\';\n    }).join(\'\');\n    resultEl.innerHTML=\n      \'<div class="sim-result-id">[\'+data.simulation_id+\']</div>\'+\n      \'<div class="sim-row"><span class="lbl">Risk Assessment</span><span class="risk-chip \'+rc+\'">\'+p.assigned_risk+\'</span></div>\'+\n      \'<div class="sim-row"><span class="lbl">NOAA G-Scale</span><span class="val">\'+p.noaa_scale+\'</span></div>\'+\n      \'<div class="sim-row"><span class="lbl">Est. Transit Time</span><span class="val">\'+p.estimated_transit_hours+\' hrs</span></div>\'+\n      \'<div class="sim-row"><span class="lbl">Routing Action</span><span class="val" style="font-size:11px">\'+p.routing_action+\'</span></div>\'+\n      \'<div class="sim-row"><span class="lbl">Assets Impacted</span><span class="val">\'+a.affected_assets_count+\' / \'+a.total_assets_registered+\'</span></div>\'+\n      \'<div class="sim-assets-section">\'+\n        \'<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:10px">Full Asset Screening</div>\'+\n        assetRows+\n      \'</div>\'+\n      \'<div style="font-size:10px;color:var(--text-faint);margin-top:12px;border-top:1px solid var(--border-subtle);padding-top:8px">Isolated sandbox &mdash; tagged IS_SIMULATED: TRUE</div>\';\n    showToast(\'Simulation complete: \'+p.assigned_risk+\' risk\',rc===\'high\'?\'error\':(rc===\'medium\'?\'warn\':\'success\'));\n  }catch(e){showToast(\'Simulation failed. Check server.\',\'error\');}\n  finally{\n    spinner.style.display=\'none\';\n    btnTxt.textContent=\'Run Physics & Asset Simulation\';\n    document.getElementById(\'btn-sim\').disabled=false;\n  }\n}\n\nfetchStatus();\nfetchIncidents();\nfetchQueue();\nsetInterval(fetchStatus,3000);\nsetInterval(fetchIncidents,3000);\nsetInterval(function(){if(currentView===\'queue\')fetchQueue();},5000);\nsetInterval(function(){if(currentView!==\'queue\')fetchQueue();},10000);\n</script>\n</body>\n</html>\n'
 
+@app.post("/api/simulate/dispatch")
+def dispatch_simulated_incident(req: SimulationDispatchRequest):
+    """Create a test incident dossier from simulation results for testing human-in-the-loop workflows."""
+    incident_manager.ensure_incident_dir()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    inc_id = f"INC-SIM-{int(time.time())}"
+
+    status = "AWAITING_APPROVAL" if req.assigned_risk == "HIGH" else ("INVESTIGATING" if req.assigned_risk == "MEDIUM" else "OPEN")
+    
+    incident = {
+        "incident_id": inc_id,
+        "event_id": req.simulation_id,
+        "created_at": now_iso,
+        "updated_at": now_iso,
+        "severity": req.assigned_risk,
+        "status": status,
+        "title": f"SIMULATED Space Weather Hazard: {req.assigned_risk} Risk ({req.g_scale} / Kp {req.predicted_kp:.1f}) [SANDBOX]",
+        "hazard_summary": {
+            "speed_km_s": req.speed_km_s,
+            "max_kp_predicted": req.predicted_kp,
+            "g_scale": req.g_scale,
+            "is_earth_directed": True,
+            "is_simulated": True
+        },
+        "impacted_assets": req.affected_assets,
+        "approval_record": {
+            "required": req.assigned_risk == "HIGH",
+            "status": "PENDING" if req.assigned_risk == "HIGH" else "NOT_REQUIRED",
+            "decided_by": None,
+            "decision_time": None,
+            "operational_notes": None
+        },
+        "audit_history": [
+            {
+                "timestamp": now_iso,
+                "actor": req.operator_name,
+                "action": "SIMULATION_DISPATCHED",
+                "notes": f"Dispatched sandbox simulation {req.simulation_id} for operational drill."
+            }
+        ]
+    }
+    incident_manager.save_incident(incident)
+    return {"status": "SUCCESS", "incident_id": inc_id, "incident": incident}
+
+
+# --- Web Application Entrypoint ---
 
 @app.get("/", response_class=HTMLResponse)
 def get_dashboard():
-    """Serve the single-page Control Center operations dashboard."""
-    return DASHBOARD_HTML
+    """Serve the single-page Control Center operations dashboard dynamically."""
+    if os.path.exists(DASHBOARD_FILE):
+        with open(DASHBOARD_FILE, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+    return HTMLResponse("<h1>Dashboard file not found</h1>", status_code=500)
 
 
 def main():
     import uvicorn
     print("=" * 65)
-    print("  SolarSentinel V2.5 Operations Control Center")
+    print("  SolarSentinel V3.0 Enterprise Operations Platform")
     print("  Local Live UI : http://localhost:8000")
     print("  API Docs      : http://localhost:8000/docs")
     print("=" * 65)

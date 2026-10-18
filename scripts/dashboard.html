@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolarSentinel — Autonomous Space Weather Defense & Infrastructure RPA Platform</title>
+<meta name="description" content="Enterprise Space Weather Operations, Critical Infrastructure Risk Defense, and UiPath RPA Automation Platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-void:#020811;--bg-base:#050c1a;--bg-surface:#091222;--bg-elevated:#0e1a2e;
+  --bg-glass:rgba(9,18,34,0.72);--bg-glass-heavy:rgba(5,10,20,0.92);
+  --bg-input:rgba(4,8,18,0.85);--bg-row-hover:rgba(20,35,65,0.45);
+  --border-subtle:rgba(51,65,85,0.25);--border-default:rgba(51,65,85,0.45);
+  --border-glow:rgba(56,189,248,0.35);--border-active:rgba(6,182,212,0.65);
+  --cyan:#06b6d4;--blue:#38bdf8;--teal:#14b8a6;--emerald:#10b981;
+  --amber:#f59e0b;--orange:#f97316;--red:#ef4444;--rose:#fb7185;
+  --violet:#8b5cf6;--indigo:#6366f1;
+  --text-primary:#f1f5f9;--text-secondary:#cbd5e1;--text-muted:#64748b;--text-faint:#3d526b;
+  --sidebar-w:64px;--sidebar-exp:220px;--topbar-h:62px;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+  --shadow-glow:0 0 28px rgba(6,182,212,.14);--shadow-xl:0 14px 45px rgba(0,0,0,.6);
+  --ease:cubic-bezier(0.4,0,0.2,1);--ease-out:cubic-bezier(0.16,1,0.3,1);
+  --t-fast:0.14s;--t-med:0.24s;--t-slow:0.38s;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-void);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono','Fira Code',monospace}
+::selection{background:rgba(6,182,212,.3);color:#fff}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(100,116,139,.35);border-radius:3px}
+
+#star-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app-shell{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--bg-glass-heavy);backdrop-filter:blur(28px) saturate(1.7);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;align-items:center;padding:16px 0;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:width var(--t-slow) var(--ease-out);overflow:hidden}
+.sidebar:hover{width:var(--sidebar-exp)}
+.sidebar:hover .nav-label{opacity:1;transform:translateX(0)}
+.sidebar:hover .sidebar-logo-text{opacity:1;max-width:130px}
+.sidebar-logo-wrap{display:flex;align-items:center;gap:11px;margin-bottom:24px;padding:0 12px;width:100%;cursor:pointer}
+.sidebar-logo{width:40px;height:40px;flex-shrink:0;background:linear-gradient(135deg,#0c4a6e,#06b6d4);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(6,182,212,.35);position:relative}
+.sidebar-logo::after{content:'';position:absolute;inset:-2px;border-radius:12px;border:1px solid rgba(6,182,212,.4);animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{opacity:.4}50%{opacity:.9}}
+.sidebar-logo-text{font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--text-secondary);opacity:0;max-width:0;overflow:hidden;transition:opacity var(--t-med) var(--ease),max-width var(--t-slow) var(--ease-out);white-space:nowrap;line-height:1.2}
+.nav-group{display:flex;flex-direction:column;gap:3px;width:100%;padding:0 8px}
+.nav-divider{height:1px;background:var(--border-subtle);margin:8px 12px}
+.nav-item{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--t-fast) var(--ease);position:relative;white-space:nowrap;color:var(--text-muted);text-decoration:none;user-select:none}
+.nav-item:hover{background:rgba(56,189,248,.08);color:var(--text-secondary)}
+.nav-item.active{background:rgba(6,182,212,.12);color:var(--cyan)}
+.nav-item.active::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--cyan);border-radius:0 3px 3px 0;box-shadow:0 0 12px rgba(6,182,212,.6)}
+.nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.nav-label{font-size:12.5px;font-weight:600;opacity:0;transform:translateX(-10px);transition:all var(--t-med) var(--ease)}
+.sidebar-footer{margin-top:auto;padding:10px 8px;width:100%}
+.sidebar-version{font-size:10px;color:var(--text-faint);text-align:center;font-weight:700}
+
+/* MAIN */
+.main-content{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+.topbar{height:var(--topbar-h);background:var(--bg-glass-heavy);backdrop-filter:blur(22px) saturate(1.6);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.page-breadcrumb{font-size:11px;color:var(--text-faint);display:flex;align-items:center;gap:6px}
+.page-title{font-size:15px;font-weight:800;background:linear-gradient(135deg,#f1f5f9,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(10,18,35,.75);border:1px solid var(--border-subtle);border-radius:20px;padding:4px 12px 4px 7px;font-size:11px;font-weight:600;transition:border-color var(--t-fast)}
+.status-pill:hover{border-color:var(--border-glow)}
+.pulse-dot{width:6px;height:6px;border-radius:50%;position:relative;flex-shrink:0}
+.pulse-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;animation:ring 2s ease-out infinite}
+.pd-green{background:var(--emerald)}.pd-green::after{border:1.5px solid var(--emerald)}
+.pd-amber{background:var(--amber)}.pd-amber::after{border:1.5px solid var(--amber)}
+.pd-blue{background:var(--blue)}.pd-blue::after{border:1.5px solid var(--blue)}
+.pd-cyan{background:var(--cyan)}.pd-cyan::after{border:1.5px solid var(--cyan)}
+.pd-red{background:var(--red)}.pd-red::after{border:1.5px solid var(--red)}
+@keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.4);opacity:0}}
+.topbar-clock{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-muted);background:rgba(4,8,18,.7);padding:5px 10px;border-radius:var(--r-sm);border:1px solid var(--border-subtle)}
+
+/* TOPBAR BUTTONS */
+.btn-run-pipeline{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 15px;font-size:11.5px;font-weight:700;cursor:pointer;box-shadow:0 0 15px rgba(2,132,199,.35);transition:all var(--t-fast)}
+.btn-run-pipeline:hover{transform:translateY(-1px);box-shadow:0 0 22px rgba(2,132,199,.55)}
+.btn-auth-user{display:inline-flex;align-items:center;gap:8px;background:rgba(15,23,42,.7);border:1px solid var(--border-subtle);border-radius:var(--r-sm);padding:5px 12px;font-size:11.5px;color:var(--text-secondary);cursor:pointer;transition:border-color var(--t-fast)}
+.btn-auth-user:hover{border-color:var(--border-glow);color:#fff}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#020811}
+
+/* VIEWS */
+.view{display:none;padding:26px 28px 64px;animation:fadeIn .22s var(--ease)}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* SECTION HEADER */
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.sec-title{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);display:flex;align-items:center;gap:8px}
+.sec-title .bar{width:3px;height:14px;border-radius:2px;background:var(--cyan);box-shadow:0 0 8px rgba(6,182,212,.4)}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;letter-spacing:.3px}
+.badge-live{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}
+.badge-sand{background:rgba(56,189,248,.12);color:var(--blue);border:1px solid rgba(56,189,248,.25)}
+.badge-info{background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25)}
+.badge-warn{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}
+.kpi-card{background:var(--bg-glass);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:20px 22px 18px;position:relative;overflow:hidden;transition:all var(--t-med) var(--ease)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.kpi-card:hover{border-color:var(--border-glow);transform:translateY(-3px);box-shadow:var(--shadow-glow)}
+.kpi-c1::before{background:linear-gradient(90deg,var(--emerald),var(--teal))}
+.kpi-c2::before{background:linear-gradient(90deg,var(--blue),var(--indigo))}
+.kpi-c3::before{background:linear-gradient(90deg,var(--amber),var(--orange))}
+.kpi-c4::before{background:linear-gradient(90deg,var(--cyan),var(--blue))}
+.kpi-icon{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px}
+.kpi-c1 .kpi-icon{background:rgba(16,185,129,.12)}
+.kpi-c2 .kpi-icon{background:rgba(56,189,248,.12)}
+.kpi-c3 .kpi-icon{background:rgba(245,158,11,.12)}
+.kpi-c4 .kpi-icon{background:rgba(6,182,212,.12)}
+.kpi-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:5px}
+.kpi-value{font-size:28px;font-weight:800;line-height:1.1;letter-spacing:-.5px}
+.kpi-sub{font-size:11px;color:var(--text-faint);margin-top:6px}
+
+/* GLASS PANEL */
+.glass-panel{background:var(--bg-glass);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--border-subtle);border-radius:var(--r-lg);overflow:hidden}
+.panel-hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 16px;border-bottom:1px solid var(--border-subtle)}
+.panel-title{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:9px}
+.panel-body{padding:20px 22px}
+
+/* DASHBOARD GRID */
+.dash-grid{display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
+
+/* INCIDENT CARDS */
+.incident-list{display:flex;flex-direction:column;gap:14px}
+.inc-card{background:rgba(6,10,24,.65);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:18px 20px;position:relative;overflow:hidden;transition:all var(--t-med) var(--ease)}
+.inc-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.inc-card.sev-high::before{background:linear-gradient(180deg,var(--red),var(--rose))}
+.inc-card.sev-medium::before{background:linear-gradient(180deg,var(--amber),var(--orange))}
+.inc-card.sev-low::before{background:linear-gradient(180deg,var(--emerald),var(--teal))}
+.inc-card:hover{border-color:var(--border-glow);background:rgba(10,18,40,.75);transform:translateX(3px)}
+.inc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.inc-title-text{font-size:13.5px;font-weight:700;color:var(--text-primary);line-height:1.3}
+.inc-id-text{font-size:10.5px;color:var(--text-faint);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.sev-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;flex-shrink:0}
+.sev-badge.high{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.sev-badge.medium{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.sev-badge.low{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}
+.inc-metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:rgba(2,6,16,.55);border:1px solid rgba(25,35,60,.6);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px}
+.inc-metric-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);margin-bottom:2px}
+.inc-metric-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text-secondary)}
+.inc-assets-block{margin-bottom:12px}
+.inc-assets-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:7px}
+.inc-assets-list{list-style:none;display:flex;flex-direction:column;gap:3px}
+.inc-assets-list li{font-size:11.5px;color:var(--text-secondary);padding:4px 0 4px 14px;position:relative}
+.inc-assets-list li::before{content:'▸';position:absolute;left:0;color:var(--cyan);font-size:10px}
+.inc-footer-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid rgba(30,41,59,.3)}
+.inc-audit-txt{font-size:10.5px;color:var(--text-faint)}
+.inc-actions{display:flex;gap:8px;align-items:center}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 16px;border-radius:var(--r-sm);font-size:11.5px;font-weight:700;letter-spacing:.2px;border:none;cursor:pointer;transition:all var(--t-fast) var(--ease)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-approve{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.25)}
+.btn-approve:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 18px rgba(16,185,129,.38)}
+.btn-reject{background:rgba(239,68,68,.13);color:#fca5a5;border:1px solid rgba(239,68,68,.28)}
+.btn-reject:hover:not(:disabled){background:rgba(239,68,68,.22)}
+.decision-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px}
+.chip-approved{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}
+.chip-rejected{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+
+/* HOMEPAGE VIEW */
+.home-hero{padding:48px 0 40px;text-align:center;max-width:900px;margin:0 auto}
+.home-ticker{display:inline-flex;align-items:center;gap:10px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.3);border-radius:24px;padding:6px 18px;font-size:11.5px;font-weight:700;color:var(--cyan);margin-bottom:24px;letter-spacing:.4px}
+.home-title{font-size:42px;font-weight:900;letter-spacing:-1.2px;line-height:1.15;margin-bottom:18px;background:linear-gradient(135deg,#ffffff 30%,#94a3b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.home-subtitle{font-size:16px;color:var(--text-secondary);line-height:1.6;margin-bottom:34px;max-width:760px;margin-left:auto;margin-right:auto}
+.home-cta-row{display:flex;justify-content:center;gap:14px;align-items:center;margin-bottom:44px}
+.btn-cta-primary{background:linear-gradient(135deg,#0284c7,#06b6d4);color:#fff;border:none;border-radius:var(--r-md);padding:14px 28px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 25px rgba(6,182,212,.35);transition:all var(--t-fast)}
+.btn-cta-primary:hover{transform:translateY(-2px);box-shadow:0 8px 35px rgba(6,182,212,.55)}
+.btn-cta-sec{background:rgba(15,23,42,.8);border:1px solid var(--border-default);color:var(--text-secondary);border-radius:var(--r-md);padding:14px 24px;font-size:14px;font-weight:700;cursor:pointer;transition:all var(--t-fast)}
+.btn-cta-sec:hover{border-color:var(--border-glow);color:#fff}
+
+.threat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:28px}
+.threat-card{background:var(--bg-glass);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:24px 20px;transition:all var(--t-med) var(--ease)}
+.threat-card:hover{border-color:var(--border-glow);transform:translateY(-3px)}
+.threat-icon{font-size:28px;margin-bottom:14px}
+.threat-name{font-size:14px;font-weight:800;color:var(--text-primary);margin-bottom:8px}
+.threat-desc{font-size:12px;color:var(--text-muted);line-height:1.6}
+.threat-tag{display:inline-block;margin-top:12px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+
+.arch-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.arch-step{background:rgba(5,10,22,.6);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:18px 20px}
+.arch-step-num{font-size:11px;font-weight:800;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+.arch-step-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.arch-step-desc{font-size:11.5px;color:var(--text-muted);line-height:1.5}
+
+/* REPORTS VIEW */
+.reports-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.report-card{background:rgba(5,10,22,.65);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;transition:border-color var(--t-fast)}
+.report-card:hover{border-color:var(--border-glow)}
+.report-info{flex:1;min-width:0;padding-right:16px}
+.report-title{font-size:12.5px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-meta{font-size:10.5px;color:var(--text-faint);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.report-actions{display:flex;gap:8px;align-items:center}
+.btn-download{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:var(--r-sm);padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;transition:transform var(--t-fast)}
+.btn-download:hover{transform:translateY(-1px)}
+.btn-preview{background:rgba(30,41,59,.6);border:1px solid var(--border-subtle);color:var(--text-secondary);border-radius:var(--r-sm);padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer}
+.btn-preview:hover{border-color:var(--border-glow);color:#fff}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(2,6,16,.85);backdrop-filter:blur(8px);z-index:999;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--bg-glass-heavy);border:1px solid var(--border-glow);border-radius:var(--r-lg);width:100%;max-width:580px;box-shadow:var(--shadow-xl);overflow:hidden;animation:modalIn .24s var(--ease-out)}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-hdr{padding:20px 24px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:15px;font-weight:800;color:var(--text-primary)}
+.modal-close{font-size:18px;color:var(--text-muted);cursor:pointer;background:none;border:none;padding:4px}
+.modal-close:hover{color:#fff}
+.modal-body{padding:24px;max-height:75vh;overflow-y:auto}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border-subtle);display:flex;justify-content:flex-end;gap:10px}
+
+/* FORM ELEMENTS */
+.form-field{margin-bottom:16px}
+.form-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px}
+.form-field input,.form-field select,.form-field textarea{width:100%;background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--r-sm);padding:10px 14px;color:var(--text-primary);font-size:12.5px;font-family:inherit;outline:none;transition:border-color var(--t-fast)}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(6,182,212,.2)}
+
+/* PIPELINE MODAL TERMINAL */
+.pipe-step-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.pipe-step-item{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:rgba(5,10,22,.6);border:1px solid var(--border-subtle);border-radius:var(--r-sm);font-size:11.5px}
+.pipe-step-name{color:var(--text-secondary);font-weight:600}
+.pipe-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.pt-pending{background:rgba(51,65,85,.3);color:var(--text-muted)}
+.pt-running{background:rgba(6,182,212,.15);color:var(--cyan);animation:pulse 1.2s infinite}
+.pt-completed{background:rgba(16,185,129,.15);color:#6ee7b7}
+.pt-failed{background:rgba(239,68,68,.15);color:#fca5a5}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.terminal-window{background:#030712;border:1px solid rgba(30,41,59,.7);border-radius:var(--r-sm);padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;height:180px;overflow-y:auto;line-height:1.5}
+.progress-bar-wrap{height:6px;background:rgba(30,41,59,.5);border-radius:3px;overflow:hidden;margin-bottom:16px}
+.progress-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--emerald));transition:width var(--t-med)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg-glass-heavy);backdrop-filter:blur(20px);border:1px solid var(--border-default);border-radius:var(--r-md);padding:12px 18px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-xl);min-width:280px;max-width:380px;animation:toastIn var(--t-slow) var(--ease-out) forwards}
+.toast.success{border-left:3px solid var(--emerald)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--cyan)}
+.toast.warn{border-left:3px solid var(--amber)}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+
+/* ASSET CARDS */
+.asset-cards{display:flex;flex-direction:column;gap:14px}
+.asset-card{background:var(--bg-glass);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:20px 22px;transition:all var(--t-med) var(--ease)}
+.asset-card:hover{border-color:var(--border-glow);transform:translateX(3px)}
+.asset-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.asset-name-wrap{display:flex;align-items:center;gap:12px}
+.asset-type-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.4px}
+.type-sat{background:rgba(56,189,248,.1);color:var(--blue);border:1px solid rgba(56,189,248,.25)}
+.type-grid{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.type-air{background:rgba(139,92,246,.1);color:var(--violet);border:1px solid rgba(139,92,246,.25)}
+.type-radio{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.25)}
+.asset-name-text{font-size:14px;font-weight:800;color:var(--text-primary)}
+.asset-sub{font-size:11.5px;color:var(--text-faint);margin-top:2px}
+.crit-chip{font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;letter-spacing:.3px}
+.crit-chip.HIGH,.crit-chip.CRITICAL{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+.crit-chip.MEDIUM{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}
+.crit-chip.LOW{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}
+.asset-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.asset-detail-item{background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm);padding:11px 14px}
+.asset-detail-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);margin-bottom:4px}
+.asset-detail-value{font-size:12px;color:var(--text-secondary);line-height:1.4}
+.sop-block{background:rgba(6,182,212,.04);border:1px solid rgba(6,182,212,.12);border-radius:var(--r-sm);padding:12px 14px}
+.sop-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--cyan);margin-bottom:6px}
+.sop-text{font-size:11.5px;color:var(--text-secondary);line-height:1.6}
+
+/* SIMULATOR */
+.sim-layout{display:grid;grid-template-columns:1fr 400px;gap:22px;align-items:start}
+input[type="range"]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:rgba(30,41,59,.7);outline:none}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));cursor:pointer;box-shadow:0 0 10px rgba(6,182,212,.45);transition:transform var(--t-fast)}
+input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+
+/* QUEUE */
+.queue-layout{display:grid;grid-template-columns:280px 1fr;gap:22px;align-items:start}
+.q-table{width:100%;border-collapse:collapse}
+.q-table th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-faint);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border-subtle)}
+.q-table td{font-size:12px;color:var(--text-secondary);padding:11px 14px;border-bottom:1px solid rgba(30,41,59,.25);font-family:'JetBrains Mono',monospace}
+.q-table tr:hover td{background:var(--bg-row-hover)}
+
+@media (max-width:1300px){.dash-grid,.sim-layout,.queue-layout,.reports-grid{grid-template-columns:1fr}.threat-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:768px){.sidebar{display:none}.main-content{margin-left:0}.kpi-grid,.threat-grid,.arch-steps{grid-template-columns:1fr}.topbar{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+
+<div class="app-shell">
+  <!-- SIDEBAR NAVIGATION -->
+  <nav class="sidebar">
+    <div class="sidebar-logo-wrap" onclick="showView('home')">
+      <div class="sidebar-logo">&#x1F6F0;&#xFE0F;</div>
+      <div class="sidebar-logo-text">SOLAR<br>SENTINEL</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-item" id="nav-home" onclick="showView('home')">
+        <span class="nav-icon">&#x1F310;</span><span class="nav-label">Product Home</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')">
+        <span class="nav-icon">&#x1F4CA;</span><span class="nav-label">Overview</span>
+      </div>
+      <div class="nav-item" id="nav-incidents" onclick="showView('incidents')">
+        <span class="nav-icon">&#x1F6A8;</span><span class="nav-label">Incidents</span>
+      </div>
+      <div class="nav-item" id="nav-simulator" onclick="showView('simulator')">
+        <span class="nav-icon">&#x1F9EA;</span><span class="nav-label">Simulator</span>
+      </div>
+      <div class="nav-item" id="nav-assets" onclick="showView('assets')">
+        <span class="nav-icon">&#x1F6F0;&#xFE0F;</span><span class="nav-label">Assets</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" id="nav-queue" onclick="showView('queue')">
+        <span class="nav-icon">&#x1F4CB;</span><span class="nav-label">RPA Queue</span>
+      </div>
+      <div class="nav-item" id="nav-reports" onclick="showView('reports')">
+        <span class="nav-icon">&#x1F4E5;</span><span class="nav-label">Reports &amp; Exports</span>
+      </div>
+    </div>
+    <div class="sidebar-footer"><div class="sidebar-version">V3.0</div></div>
+  </nav>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="page-breadcrumb">SolarSentinel <span class="sep">&rsaquo;</span> <span id="topbar-view-name">Overview</span></div>
+          <div class="page-title">Operations Control Center</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-run-pipeline" onclick="openPipelineModal()">&#x25B6; Run Pipeline</button>
+        <div class="status-pill"><div class="pulse-dot pd-blue"></div>UiPath: ACTIVE</div>
+        <div class="status-pill"><div class="pulse-dot pd-green"></div>NASA DONKI</div>
+        <div class="status-pill"><div class="pulse-dot pd-green" id="noaa-dot"></div>NOAA: <span id="noaa-kp-val">Kp 2.0</span></div>
+        <div class="status-pill"><div class="pulse-dot pd-cyan"></div>Groq LPU</div>
+        <div class="topbar-clock mono" id="topbar-clock">00:00:00 UTC</div>
+        <div class="btn-auth-user" id="auth-btn" onclick="openAuthModal()">
+          <div class="user-avatar" id="user-avatar-badge">&#x1F468;&#x200D;&#x1F680;</div>
+          <span id="user-name-display">Sign In</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEW 0: PRODUCT HOMEPAGE -->
+    <div class="view" id="view-home">
+      <div class="home-hero">
+        <div class="home-ticker"><span class="pulse-dot pd-green"></span> LIVE TELEMETRY STREAM &bull; NOAA SWPC KP 2.3 &bull; G0 NOMINAL CONDITIONS</div>
+        <h1 class="home-title">Autonomous Space Weather Defense &amp; Infrastructure Protection Platform</h1>
+        <p class="home-subtitle">
+          SolarSentinel continuously ingests solar observations from NASA DONKI, applies Groq-accelerated AI kinematic reasoning with GPT-OSS 120B, enforces deterministic physical safety guardrails, cross-references threats against critical satellite &amp; power assets, and automates multi-channel emergency mitigation via UiPath RPA.
+        </p>
+        <div class="home-cta-row">
+          <button class="btn-cta-primary" onclick="showView('dashboard')">Launch Operations Control Center &rarr;</button>
+          <button class="btn-cta-sec" onclick="openAuthModal()">Sign In as Operator</button>
+        </div>
+      </div>
+
+      <div class="sec-hdr" style="margin-top:20px">
+        <div class="sec-title"><div class="bar"></div>The Space Weather Threat: Critical Infrastructure Impacts</div>
+        <span class="badge badge-warn">AEROSPACE VULNERABILITY MODEL</span>
+      </div>
+      <div class="threat-grid">
+        <div class="threat-card">
+          <div class="threat-icon">&#x1F6F0;&#xFE0F;</div>
+          <div class="threat-name">Low Earth Orbit (LEO) Satellites</div>
+          <div class="threat-desc">Solar UV &amp; X-ray flux heats Earth's upper atmosphere, swelling thermospheric density. Orbital aerodynamic drag surges by up to 300%, triggering catastrophic premature orbital decay.</div>
+          <span class="threat-tag">Starlink, ISS, Earth Observation</span>
+        </div>
+        <div class="threat-card">
+          <div class="threat-icon">&#x1F4E1;</div>
+          <div class="threat-name">Geostationary (GEO) Orbiters</div>
+          <div class="threat-desc">Relativistic electron flux (E &gt; 2 MeV) penetrates spacecraft shielding, causing internal dielectric breakdown, electrostatic discharge (ESD) arcing, and optical star tracker blindness.</div>
+          <span class="threat-tag">GPS, Satcom, Defense Relay</span>
+        </div>
+        <div class="threat-card">
+          <div class="threat-icon">&#x26A1;</div>
+          <div class="threat-name">High-Voltage Power Grids</div>
+          <div class="threat-desc">Interplanetary shocks compress the magnetosphere, driving Geomagnetically Induced Currents (GIC) into ground transformers, causing core half-cycle saturation and voltage collapse.</div>
+          <span class="threat-tag">735 kV Northern Grid, Bulk Power</span>
+        </div>
+        <div class="threat-card">
+          <div class="threat-icon">&#x2708;&#xFE0F;</div>
+          <div class="threat-name">Transpolar Commercial Aviation</div>
+          <div class="threat-desc">Solar Energetic Particle (SEP) events induce Polar Cap Absorption (PCA) in the ionospheric D-layer, completely severing HF radio communications along Arctic flight routes.</div>
+          <span class="threat-tag">Polar-1 Air Corridors, Avionics</span>
+        </div>
+      </div>
+
+      <div class="sec-hdr" style="margin-top:48px">
+        <div class="sec-title"><div class="bar"></div>Autonomous RPA &amp; AI Architecture Workflow</div>
+        <span class="badge badge-info">10-STAGE ORCHESTRATION</span>
+      </div>
+      <div class="arch-steps">
+        <div class="arch-step">
+          <div class="arch-step-num">STAGE 01 &bull; INGESTION</div>
+          <div class="arch-step-title">Resilient Stream Polling</div>
+          <div class="arch-step-desc">UiPath NetHttpRequest queries NASA DONKI and NOAA SWPC with exponential backoff and jitter over 3 retries.</div>
+        </div>
+        <div class="arch-step">
+          <div class="arch-step-num">STAGE 02 &bull; DEDUPLICATION</div>
+          <div class="arch-step-title">Idempotent State Hashing</div>
+          <div class="arch-step-desc">Deterministic SHA-256 event fingerprinting ensures zero duplicate alerts or wasted cycles even during 1-minute polling.</div>
+        </div>
+        <div class="arch-step">
+          <div class="arch-step-num">STAGE 03 &bull; AI REASONING</div>
+          <div class="arch-step-title">GPT-OSS 120B on Groq LPU</div>
+          <div class="arch-step-desc">Ultra-low-latency (~500 TPS) scientific analysis extracting plasma expansion velocity, source region, and transit window.</div>
+        </div>
+        <div class="arch-step">
+          <div class="arch-step-num">STAGE 04 &bull; SAFETY GUARDRAIL</div>
+          <div class="arch-step-title">NOAA Physical Scale Rules</div>
+          <div class="arch-step-desc">Deterministic G1–G5 Geomagnetic, S1–S5 Solar Radiation, and R1–R5 Radio Blackout scales prevent LLM hallucinations.</div>
+        </div>
+        <div class="arch-step">
+          <div class="arch-step-num">STAGE 05 &bull; ASSET MATCHING</div>
+          <div class="arch-step-title">Infrastructure Screening</div>
+          <div class="arch-step-desc">Cross-references hazards against registered satellites, power grids, and flight paths in asset_registry.json.</div>
+        </div>
+        <div class="arch-step">
+          <div class="arch-step-num">STAGE 06 &bull; RPA INCIDENTS &amp; HITL</div>
+          <div class="arch-step-title">Transactional Sign-Off</div>
+          <div class="arch-step-desc">Enforces human-in-the-loop authorization for severe threats, logging signed operator audit trails and Excel reports.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 1: OVERVIEW DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="sec-hdr">
+        <div class="sec-title"><div class="bar"></div>Real-Time Telemetry &amp; Autonomous Conductor</div>
+        <span class="badge badge-live">&#x25CF; LIVE</span>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-c1">
+          <div class="kpi-icon">&#x1F7E2;</div>
+          <div class="kpi-label">System Health</div>
+          <div class="kpi-value" id="kpi-health" style="color:var(--emerald)">HEALTHY</div>
+          <div class="kpi-sub">All autonomous error boundaries intact</div>
+        </div>
+        <div class="kpi-card kpi-c2">
+          <div class="kpi-icon">&#x1F4E6;</div>
+          <div class="kpi-label">Transaction Queue</div>
+          <div class="kpi-value mono" id="kpi-queue">0 / 0</div>
+          <div class="kpi-sub">Pending / Completed items</div>
+        </div>
+        <div class="kpi-card kpi-c3">
+          <div class="kpi-icon">&#x26A0;&#xFE0F;</div>
+          <div class="kpi-label">Active Incidents</div>
+          <div class="kpi-value mono" id="kpi-incidents" style="color:var(--amber)">0</div>
+          <div class="kpi-sub">Operational threats under monitoring</div>
+        </div>
+        <div class="kpi-card kpi-c4">
+          <div class="kpi-icon">&#x1F9F2;</div>
+          <div class="kpi-label">Planetary Kp Index</div>
+          <div class="kpi-value mono" id="kpi-kp" style="color:var(--cyan)">2.0</div>
+          <div class="kpi-sub" id="kpi-kp-sub">NOAA SWPC 3-hour (G0)</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="glass-panel">
+          <div class="panel-hdr">
+            <div class="panel-title">&#x1F6A8; Recent Incidents Feed</div>
+            <span class="badge badge-live">Auto-refresh 3s</span>
+          </div>
+          <div class="panel-body">
+            <div id="dash-incidents-list">
+              <div class="empty-state"><div class="es-icon">&#x2705;</div><div class="es-msg">Loading incidents&hellip;</div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="glass-panel">
+            <div class="panel-hdr">
+              <div class="panel-title">&#x1F4C8; Pipeline Telemetry</div>
+              <span class="badge badge-live">LIVE CONTEXT</span>
+            </div>
+            <div class="panel-body">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <span style="font-size:12px;color:var(--text-muted)">Total Pipeline Runs</span>
+                  <span class="mono" style="font-size:14px;font-weight:800;color:var(--cyan)" id="stat-runs">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <span style="font-size:12px;color:var(--text-muted)">Transactions Processed</span>
+                  <span class="mono" style="font-size:14px;font-weight:800;color:var(--emerald)" id="stat-txns">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <span style="font-size:12px;color:var(--text-muted)">Last Successful Run</span>
+                  <span class="mono" style="font-size:11px;font-weight:700;color:var(--text-secondary)" id="stat-lastrun">&mdash;</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <span style="font-size:12px;color:var(--text-muted)">Conductor Engine</span>
+                  <span class="mono" style="font-size:11px;font-weight:700;color:var(--text-secondary)">UiPath Studio 2026.0 / Python</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="height:16px"></div>
+          <div class="glass-panel">
+            <div class="panel-hdr">
+              <div class="panel-title">&#x1F4CB; RPA Queue Metrics</div>
+              <span class="badge badge-sand" style="cursor:pointer" onclick="showView('queue')">VIEW QUEUE &rarr;</span>
+            </div>
+            <div class="panel-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">Pending Items</div>
+                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--blue);margin-top:4px" id="dash-q-pending">0</div>
+                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Awaiting robot</div>
+                </div>
+                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">Completed</div>
+                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--emerald);margin-top:4px" id="dash-q-completed">0</div>
+                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Success rate 100%</div>
+                </div>
+                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">In Progress</div>
+                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--cyan);margin-top:4px" id="dash-q-in-progress">0</div>
+                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Active workers</div>
+                </div>
+                <div style="padding:12px 14px;background:rgba(5,10,20,.5);border:1px solid var(--border-subtle);border-radius:var(--r-sm)">
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px">Failed Items</div>
+                  <div class="mono" style="font-size:22px;font-weight:800;color:var(--red);margin-top:4px" id="dash-q-failed">0</div>
+                  <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px">Max retries (0)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: INCIDENTS -->
+    <div class="view" id="view-incidents">
+      <div class="sec-hdr">
+        <div class="sec-title"><div class="bar"></div>Operational Incident Feed &amp; Human-in-the-Loop Sign-Off</div>
+        <span class="badge badge-live">Live Stream</span>
+      </div>
+      <div id="incidents-container">
+        <div class="empty-state"><div class="es-icon">&#x1F6F0;&#xFE0F;</div><div class="es-msg">Loading incidents&hellip;</div></div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: SIMULATOR -->
+    <div class="view" id="view-simulator">
+      <div class="sec-hdr">
+        <div class="sec-title"><div class="bar"></div>What-If Space-Weather Physics Simulator</div>
+        <span class="badge badge-sand">ISOLATED SANDBOX</span>
+      </div>
+      <div class="sim-layout">
+        <div class="glass-panel" style="padding:24px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:20px">&#x1F9EA; CME Ejection Parameters</div>
+          <div class="form-field">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <label>Plasma Expansion Speed</label>
+              <span class="mono" style="color:var(--cyan);font-weight:700" id="val-speed">1200 km/s</span>
+            </div>
+            <input type="range" min="200" max="3000" step="50" value="1200" id="slider-speed" oninput="document.getElementById('val-speed').textContent=this.value+' km/s'">
+          </div>
+          <div class="form-field">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <label>Predicted Max Kp Index</label>
+              <span class="mono" style="color:var(--cyan);font-weight:700" id="val-kp">7.0 &mdash; G3 Strong</span>
+            </div>
+            <input type="range" min="0" max="9" step="0.5" value="7" id="slider-kp" oninput="updateKpLabel(this.value)">
+          </div>
+          <div class="form-field">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;text-transform:none">
+              <input type="checkbox" id="check-earth" checked style="width:18px;height:18px">
+              Earth-Directed Trajectory (CME cone intersects Earth magnetopause)
+            </label>
+          </div>
+          <button class="btn-cta-primary" style="width:100%" id="btn-sim" onclick="runSimulation()">
+            Run Physics &amp; Asset Screening Simulation
+          </button>
+          <div id="sim-result" style="display:none;margin-top:20px;background:rgba(2,6,16,.8);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:18px"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="glass-panel" style="padding:22px">
+            <div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:14px">&#x26A1; NOAA G-Scale Reference Guide</div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:12px">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G0 (Kp 0-4)</span><span style="color:var(--emerald);font-weight:700">Quiet Baseline</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G1 (Kp 5)</span><span style="color:#a7f3d0;font-weight:700">Minor Storm</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G2 (Kp 6)</span><span style="color:var(--blue);font-weight:700">Moderate Storm</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G3 (Kp 7)</span><span style="color:var(--amber);font-weight:700">Strong Storm</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G4 (Kp 8)</span><span style="color:var(--orange);font-weight:700">Severe Storm</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">G5 (Kp 9)</span><span style="color:var(--red);font-weight:700">Extreme Superstorm</span></div>
+            </div>
+          </div>
+          <div class="glass-panel" style="padding:22px">
+            <div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:14px">&#x1F6E4;&#xFE0F; Decision Routing Matrix</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:var(--text-secondary)">
+              <div><span style="color:var(--emerald);font-weight:700">AUTO_LOG</span> &mdash; Non-earth-directed or Kp &lt; 5</div>
+              <div><span style="color:var(--amber);font-weight:700">OPERATOR_REVIEW</span> &mdash; Earth-directed, Kp &ge; 5</div>
+              <div><span style="color:var(--red);font-weight:700">HUMAN_APPROVAL_REQUIRED</span> &mdash; Kp &ge; 7 or Speed &ge; 1500 km/s</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: ASSETS -->
+    <div class="view" id="view-assets">
+      <div class="sec-hdr">
+        <div class="sec-title"><div class="bar"></div>Operational Infrastructure Asset Registry</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span class="badge badge-info" id="asset-count-badge">Loading&hellip;</span>
+          <button class="btn-download" onclick="openAssetModal()">&#xFF0B; Onboard New Asset</button>
+        </div>
+      </div>
+      <div class="asset-cards" id="assets-container">
+        <div class="empty-state"><div class="es-icon">&#x1F6F0;&#xFE0F;</div><div class="es-msg">Loading asset registry&hellip;</div></div>
+      </div>
+    </div>
+
+    <!-- VIEW 5: RPA QUEUE -->
+    <div class="view" id="view-queue">
+      <div class="sec-hdr">
+        <div class="sec-title"><div class="bar"></div>UiPath RPA Transaction Queue &amp; State Manager</div>
+        <span class="badge badge-live">Auto-refresh 5s</span>
+      </div>
+      <div class="queue-layout">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="kpi-card kpi-c2">
+            <div class="kpi-label">Pending Transactions</div>
+            <div class="kpi-value" id="qs-pending">0</div>
+            <div class="kpi-sub">Awaiting robot execution</div>
+          </div>
+          <div class="kpi-card kpi-c1">
+            <div class="kpi-label">Completed Transactions</div>
+            <div class="kpi-value" id="qs-completed">0</div>
+            <div class="kpi-sub">Processed with success</div>
+          </div>
+          <div class="kpi-card kpi-c3">
+            <div class="kpi-label">Failed Transactions</div>
+            <div class="kpi-value" id="qs-failed">0</div>
+            <div class="kpi-sub">Retries exhausted</div>
+          </div>
+          <div class="kpi-card kpi-c4">
+            <div class="kpi-label">In Progress</div>
+            <div class="kpi-value" id="qs-in-progress">0</div>
+            <div class="kpi-sub">Active thread leases</div>
+          </div>
+        </div>
+        <div class="glass-panel">
+          <div class="panel-hdr">
+            <div class="panel-title">&#x1F4CB; Queue Transaction Ledger</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn-preview" id="qtab-pending" onclick="switchQTab('pending')">Pending</button>
+              <button class="btn-preview" id="qtab-completed" onclick="switchQTab('completed')">Completed</button>
+              <button class="btn-preview" id="qtab-failed" onclick="switchQTab('failed')">Failed</button>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <div style="max-height:520px;overflow-y:auto">
+              <table class="q-table">
+                <thead>
+                  <tr><th>Transaction ID</th><th>Event ID</th><th>Status</th><th>Attempts</th><th>Created At</th><th>Action</th></tr>
+                </thead>
+                <tbody id="q-table-body">
+                  <tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:32px">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 6: REPORTS & EXPORTS CENTER -->
+    <div class="view" id="view-reports">
+      <div class="sec-hdr">
+        <div class="sec-title"><div class="bar"></div>Reports &amp; Operational Exports Center</div>
+        <button class="btn-preview" onclick="fetchReports()">&#x21BB; Refresh Files</button>
+      </div>
+      <div class="reports-grid">
+        <div class="glass-panel">
+          <div class="panel-hdr"><div class="panel-title">&#x1F4CA; Master Excel &amp; CSV Logs</div></div>
+          <div class="panel-body" id="reports-logs-container">
+            <div style="color:var(--text-muted);font-size:12px">Loading logs&hellip;</div>
+          </div>
+        </div>
+        <div class="glass-panel">
+          <div class="panel-hdr"><div class="panel-title">&#x1F4C4; Executive Space Weather Dossiers</div></div>
+          <div class="panel-body" id="reports-dossiers-container">
+            <div style="color:var(--text-muted);font-size:12px">Loading dossiers&hellip;</div>
+          </div>
+        </div>
+        <div class="glass-panel">
+          <div class="panel-hdr"><div class="panel-title">&#x1F4E7; Operational HTML Email Briefings</div></div>
+          <div class="panel-body" id="reports-emails-container">
+            <div style="color:var(--text-muted);font-size:12px">Loading briefings&hellip;</div>
+          </div>
+        </div>
+        <div class="glass-panel">
+          <div class="panel-hdr"><div class="panel-title">&#x1F4AC; ChatOps Webhook Payloads (Teams / Slack)</div></div>
+          <div class="panel-body" id="reports-audit-container">
+            <div style="color:var(--text-muted);font-size:12px">Loading webhooks&hellip;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 1: AUTHENTICATION -->
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">&#x1F510; Operator Authentication</div>
+      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:20px;text-align:center">
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;color:#1e293b;border:none;border-radius:var(--r-sm);padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:18px" onclick="doGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.14C3.25 21.27 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.73 1.27 6.59l4.01 3.14c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+          Continue with Google Workspace
+        </button>
+        <div style="display:flex;align-items:center;gap:12px;color:var(--text-faint);font-size:11px;text-transform:uppercase">
+          <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
+          <span>OR SIGN IN WITH OPERATOR PROFILE</span>
+          <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Operator Full Name</label>
+        <input type="text" id="auth-input-name" value="Devraj Singh" placeholder="e.g. Devraj Singh">
+      </div>
+      <div class="form-field">
+        <label>Duty Email Address</label>
+        <input type="email" id="auth-input-email" value="devraj@solarsentinel.ops" placeholder="name@agency.gov">
+      </div>
+      <div class="form-field">
+        <label>Organization / Agency</label>
+        <input type="text" id="auth-input-org" value="SolarSentinel Mission Operations" placeholder="e.g. NASA, ESA, SpaceX, National Grid">
+      </div>
+      <div class="form-field">
+        <label>Duty Role &amp; Clearance</label>
+        <select id="auth-input-role">
+          <option value="Flight Director / Mission Commander">Flight Director / Mission Commander (Level 4 Authorization)</option>
+          <option value="Satellite Operations Lead">Satellite Operations Lead (LEO/GEO Constellations)</option>
+          <option value="Power Grid Reliability Engineer">Power Grid Reliability Engineer (Transmission GIC)</option>
+          <option value="Space Weather Research Analyst">Space Weather Research Analyst (NOAA/NASA)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-preview" onclick="closeAuthModal()">Cancel</button>
+      <button class="btn-cta-primary" style="padding:10px 20px" onclick="doCredentialLogin()">Connect Operator Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: PIPELINE EXECUTION DRAWER -->
+<div class="modal-overlay" id="modal-pipeline">
+  <div class="modal-box" style="max-width:640px">
+    <div class="modal-hdr">
+      <div class="modal-title">&#x2699;&#xFE0F; Autonomous Operations Pipeline Conductor</div>
+      <button class="modal-close" onclick="closePipelineModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--text-secondary)" id="pipe-current-step">Initializing&hellip;</span>
+        <span class="mono" style="font-size:12px;font-weight:800;color:var(--cyan)" id="pipe-pct">0%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="pipe-progress-bar"></div>
+      </div>
+      <div class="pipe-step-list" id="pipe-step-list">
+        <!-- populated dynamically -->
+      </div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:14px 0 6px">Real-Time Execution Logs</div>
+      <div class="terminal-window" id="pipe-terminal-output">
+        Waiting for pipeline trigger...
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-preview" id="btn-pipe-close" onclick="closePipelineModal()">Close</button>
+      <button class="btn-run-pipeline" id="btn-pipe-start" onclick="triggerPipelineExecution()">Start Pipeline Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: SOP AUTHORIZATION (HITL) -->
+<div class="modal-overlay" id="modal-approve">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">&#x26A1; Authorize Mitigation Protocol (HITL)</div>
+      <button class="modal-close" onclick="closeApproveModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-app-incid">
+      <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px" id="modal-app-title">Space Weather Hazard</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px" id="modal-app-desc">Details loading&hellip;</div>
+      </div>
+      <div class="form-field">
+        <label>Signing Operator Name &amp; Role</label>
+        <input type="text" id="modal-app-signer" readonly style="color:var(--cyan);font-weight:700">
+      </div>
+      <div class="form-field">
+        <label>Operational Directives &amp; Authorization Rationale</label>
+        <textarea id="modal-app-notes" rows="3">Authorized immediate asset protection protocols and satellite safe-hold orientation pursuant to operational safety directives.</textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-preview" onclick="closeApproveModal()">Cancel</button>
+      <button class="btn-approve" onclick="submitApproveModal()">Sign &amp; Authorize SOP</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 4: ONBOARD ASSET -->
+<div class="modal-overlay" id="modal-asset">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">&#x1F6F0;&#xFE0F; Onboard Mission-Critical Asset</div>
+      <button class="modal-close" onclick="closeAssetModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Asset Identification Code</label>
+        <input type="text" id="new-asset-id" placeholder="e.g. ASSET-SAT-LEO-03">
+      </div>
+      <div class="form-field">
+        <label>Asset Display Name</label>
+        <input type="text" id="new-asset-name" placeholder="e.g. Sentinel-6 Radar Altimeter">
+      </div>
+      <div class="form-field">
+        <label>Operational Domain</label>
+        <select id="new-asset-domain">
+          <option value="SATELLITE_LEO">Satellite (Low Earth Orbit - LEO)</option>
+          <option value="SATELLITE_GEO">Satellite (Geostationary - GEO)</option>
+          <option value="POWER_GRID">High-Voltage Power Distribution Grid</option>
+          <option value="AVIATION">Transpolar Commercial Flight Route</option>
+          <option value="GROUND_STATION">Ground Station / Radio Astronomy Array</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Criticality Level</label>
+        <select id="new-asset-crit">
+          <option value="CRITICAL">CRITICAL (National Security / Bulk Infrastructure)</option>
+          <option value="HIGH" selected>HIGH (Commercial Satellite / Flight Corridor)</option>
+          <option value="MEDIUM">MEDIUM (Scientific Payload / Observatories)</option>
+          <option value="LOW">LOW (Experimental Sensor)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Orbit / Physical Location</label>
+        <input type="text" id="new-asset-loc" placeholder="e.g. 550 km Sun-Synchronous Polar Orbit">
+      </div>
+      <div class="form-field">
+        <label>Operator Organization &amp; Contact</label>
+        <input type="text" id="new-asset-op" placeholder="e.g. Constellation Ops (ops@solarsentinel.local)">
+      </div>
+      <div class="form-field">
+        <label>Standard Operating Procedure (SOP)</label>
+        <textarea id="new-asset-sop" rows="3" placeholder="Actionable directives when space-weather thresholds are breached..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-preview" onclick="closeAssetModal()">Cancel</button>
+      <button class="btn-cta-primary" style="padding:10px 20px" onclick="submitNewAsset()">Register Asset</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 5: DOCUMENT PREVIEW -->
+<div class="modal-overlay" id="modal-preview">
+  <div class="modal-box" style="max-width:760px">
+    <div class="modal-hdr">
+      <div class="modal-title" id="prev-title">Document Preview</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a id="prev-download-btn" class="btn-download" style="text-decoration:none" href="#" download>Download</a>
+        <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div id="prev-content-box" style="padding:22px;max-height:70vh;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary);white-space:pre-wrap;line-height:1.6">
+        Loading document content&hellip;
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// --- GLOBAL STATE ---
+var currentView = 'dashboard';
+var currentUser = {
+  name: 'Devraj Singh',
+  role: 'Flight Director / Mission Commander',
+  email: 'devraj@solarsentinel.ops',
+  org: 'SolarSentinel Command & Defense'
+};
+var pipePollTimer = null;
+var qCurrentTab = 'pending';
+var allQueueData = {};
+
+// Load saved user session
+try {
+  var saved = localStorage.getItem('solarsentinel_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+  }
+} catch (e) {}
+
+function updateAuthDisplay() {
+  document.getElementById('user-name-display').textContent = currentUser.name.split(' ')[0] + ' (' + currentUser.role.split(' ')[0] + ')';
+}
+updateAuthDisplay();
+
+// Navigation Controller
+function showView(viewId) {
+  currentView = viewId;
+  document.querySelectorAll('.view').forEach(function(el){ el.classList.remove('active'); });
+  var target = document.getElementById('view-' + viewId);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.remove('active'); });
+  var navItem = document.getElementById('nav-' + viewId);
+  if (navItem) navItem.classList.add('active');
+
+  var names = {
+    'home': 'Product Home', 'dashboard': 'Overview', 'incidents': 'Incidents',
+    'simulator': 'Simulator', 'assets': 'Assets', 'queue': 'RPA Queue', 'reports': 'Reports & Exports'
+  };
+  document.getElementById('topbar-view-name').textContent = names[viewId] || viewId;
+  window.scrollTo({top: 0, behavior: 'smooth'});
+
+  if (viewId === 'reports') fetchReports();
+  if (viewId === 'assets') fetchAssets();
+  if (viewId === 'queue') fetchQueue();
+  if (viewId === 'incidents') fetchIncidents();
+}
+
+// Clock
+setInterval(function(){
+  var now = new Date();
+  var h = String(now.getUTCHours()).padStart(2,'0');
+  var m = String(now.getUTCMinutes()).padStart(2,'0');
+  var s = String(now.getUTCSeconds()).padStart(2,'0');
+  document.getElementById('topbar-clock').textContent = h + ':' + m + ':' + s + ' UTC';
+}, 1000);
+
+// Starfield Canvas
+(function(){
+  var c = document.getElementById('star-canvas');
+  if (!c) return;
+  var ctx = c.getContext('2d');
+  var stars = [];
+  function resize(){ c.width = window.innerWidth; c.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+  for (var i = 0; i < 90; i++) {
+    stars.push({x: Math.random() * c.width, y: Math.random() * c.height, r: Math.random() * 1.3, a: Math.random()});
+  }
+  function draw(){
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      ctx.fillStyle = 'rgba(255,255,255,' + s.a + ')';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  draw();
+})();
+
+// Toasts
+function showToast(msg, type) {
+  var c = document.getElementById('toast-container');
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'info');
+  t.innerHTML = '<span>' + (type==='success'?'&#x2705;':(type==='error'?'&#x274C;':'&#x2139;&#xFE0F;')) + '</span><div>' + msg + '</div>';
+  c.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 300); }, 3800);
+}
+
+// --- AUTHENTICATION MODAL ---
+function openAuthModal() {
+  document.getElementById('auth-input-name').value = currentUser.name || '';
+  document.getElementById('auth-input-email').value = currentUser.email || '';
+  document.getElementById('auth-input-org').value = currentUser.org || '';
+  document.getElementById('auth-input-role').value = currentUser.role || 'Flight Director / Mission Commander';
+  document.getElementById('modal-auth').classList.add('active');
+}
+function closeAuthModal() {
+  document.getElementById('modal-auth').classList.remove('active');
+}
+async function doGoogleLogin() {
+  currentUser = {
+    name: 'Devraj Singh',
+    email: 'devraj.singh@workspace.google.com',
+    org: 'NASA / SolarSentinel Research Flight Command',
+    role: 'Flight Director / Mission Commander',
+    avatar: ''
+  };
+  localStorage.setItem('solarsentinel_user', JSON.stringify(currentUser));
+  updateAuthDisplay();
+  closeAuthModal();
+  showToast('Authenticated via Google Workspace as ' + currentUser.name, 'success');
+}
+async function doCredentialLogin() {
+  var name = document.getElementById('auth-input-name').value.trim();
+  var email = document.getElementById('auth-input-email').value.trim();
+  var org = document.getElementById('auth-input-org').value.trim();
+  var role = document.getElementById('auth-input-role').value;
+  if (!name) { showToast('Please enter an operator name', 'warn'); return; }
+  currentUser = { name: name, email: email, org: org, role: role };
+  localStorage.setItem('solarsentinel_user', JSON.stringify(currentUser));
+  updateAuthDisplay();
+  closeAuthModal();
+  showToast('Operator session connected: ' + name + ' (' + role + ')', 'success');
+}
+
+// --- PIPELINE RUNNER MODAL ---
+function openPipelineModal() {
+  document.getElementById('modal-pipeline').classList.add('active');
+  pollPipelineStatus();
+}
+function closePipelineModal() {
+  document.getElementById('modal-pipeline').classList.remove('active');
+  if (pipePollTimer) clearInterval(pipePollTimer);
+}
+async function triggerPipelineExecution() {
+  var btn = document.getElementById('btn-pipe-start');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  try {
+    var res = await fetch('/api/pipeline/run', {method:'POST'});
+    var data = await res.json();
+    showToast(data.message || 'Pipeline initiated', 'info');
+    if (pipePollTimer) clearInterval(pipePollTimer);
+    pipePollTimer = setInterval(pollPipelineStatus, 1200);
+  } catch (e) {
+    showToast('Failed to trigger pipeline', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Start Pipeline Run';
+  }
+}
+async function pollPipelineStatus() {
+  try {
+    var res = await fetch('/api/pipeline/status');
+    var s = await res.json();
+    document.getElementById('pipe-current-step').textContent = s.current_step;
+    document.getElementById('pipe-pct').textContent = s.progress_pct + '%';
+    document.getElementById('pipe-progress-bar').style.width = s.progress_pct + '%';
+
+    var listEl = document.getElementById('pipe-step-list');
+    listEl.innerHTML = s.steps.map(function(st){
+      var cls = 'pt-pending', icon = '&#x25CB;';
+      if (st.status === 'running') { cls = 'pt-running'; icon = '&#x25CF;'; }
+      else if (st.status === 'completed') { cls = 'pt-completed'; icon = '&#x2713;'; }
+      else if (st.status === 'failed') { cls = 'pt-failed'; icon = '&#x2717;'; }
+      return '<div class="pipe-step-item"><span class="pipe-step-name">' + icon + ' ' + st.name + '</span><span class="pipe-tag ' + cls + '">' + st.status + '</span></div>';
+    }).join('');
+
+    var term = document.getElementById('pipe-terminal-output');
+    term.textContent = s.logs.join('\n') || 'Pipeline idling...';
+    term.scrollTop = term.scrollHeight;
+
+    var startBtn = document.getElementById('btn-pipe-start');
+    if (s.is_running) {
+      startBtn.disabled = true;
+      startBtn.textContent = 'Executing...';
+    } else {
+      startBtn.disabled = false;
+      startBtn.textContent = 'Re-Run Pipeline';
+      if (s.progress_pct === 100) {
+        fetchStatus();
+        fetchIncidents();
+        fetchQueue();
+      }
+    }
+  } catch (e) {}
+}
+
+// --- DATA FETCHERS ---
+async function fetchStatus() {
+  try {
+    var r = await fetch('/api/status'), d = await r.json();
+    var hEl = document.getElementById('kpi-health');
+    hEl.textContent = d.system_health;
+    hEl.style.color = d.system_health === 'HEALTHY' ? 'var(--emerald)' : 'var(--red)';
+    document.getElementById('stat-runs').textContent = d.total_runs;
+    document.getElementById('stat-txns').textContent = d.total_transactions;
+    if (d.last_successful_run) {
+      document.getElementById('stat-lastrun').textContent = d.last_successful_run.slice(0, 19).replace('T', ' ') + ' UTC';
+    }
+    var noaa = d.services && d.services.noaa_swpc ? d.services.noaa_swpc : {status:'ONLINE', observed_kp:2.0, g_scale:'G0'};
+    document.getElementById('kpi-kp').textContent = noaa.observed_kp;
+    document.getElementById('kpi-kp-sub').textContent = 'NOAA SWPC 3-hour (' + noaa.g_scale + ')';
+    document.getElementById('noaa-kp-val').textContent = 'Kp ' + noaa.observed_kp;
+  } catch (e) {}
+}
+
+async function fetchQueue() {
+  try {
+    var r = await fetch('/api/queue'), d = await r.json();
+    var m = d.metrics || {};
+    document.getElementById('kpi-queue').textContent = (m.pending || 0) + ' / ' + (m.completed || 0);
+    document.getElementById('qs-pending').textContent = m.pending || 0;
+    document.getElementById('qs-completed').textContent = m.completed || 0;
+    document.getElementById('qs-failed').textContent = m.failed || 0;
+    document.getElementById('qs-in-progress').textContent = m.in_progress || 0;
+    
+    var dp = document.getElementById('dash-q-pending');
+    if (dp) {
+      dp.textContent = m.pending || 0;
+      document.getElementById('dash-q-completed').textContent = m.completed || 0;
+      document.getElementById('dash-q-in-progress').textContent = m.in_progress || 0;
+      document.getElementById('dash-q-failed').textContent = m.failed || 0;
+    }
+    allQueueData = d;
+    renderQueueTable(qCurrentTab);
+  } catch (e) {}
+}
+
+function switchQTab(tab) {
+  qCurrentTab = tab;
+  ['pending', 'completed', 'failed'].forEach(function(t){
+    var b = document.getElementById('qtab-' + t);
+    if (b) b.style.color = t === tab ? 'var(--cyan)' : 'var(--text-secondary)';
+  });
+  renderQueueTable(tab);
+}
+
+function renderQueueTable(tab) {
+  var tbody = document.getElementById('q-table-body');
+  var key = tab === 'pending' ? 'pending_items' : (tab === 'completed' ? 'completed_items' : 'failed_items');
+  var items = allQueueData[key] || [];
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:32px">No transactions in ' + tab + ' queue.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(function(it){
+    return '<tr>' +
+      '<td style="color:var(--cyan);font-weight:700">' + (it.transaction_id || '&mdash;') + '</td>' +
+      '<td>' + (it.event_id || '&mdash;') + '</td>' +
+      '<td><span class="badge badge-info">' + (it.status || tab).toUpperCase() + '</span></td>' +
+      '<td>' + (it.attempts || 1) + '</td>' +
+      '<td>' + (it.created_at ? it.created_at.slice(0,19).replace('T',' ') : '&mdash;') + '</td>' +
+      '<td><button class="btn-preview" onclick="openPayloadModal(\'' + it.transaction_id + '\')">Inspect JSON</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function openPayloadModal(txId) {
+  var found = null;
+  ['pending_items','in_progress_items','completed_items','failed_items'].forEach(function(k){
+    (allQueueData[k] || []).forEach(function(it){ if (it.transaction_id === txId) found = it; });
+  });
+  if (found) {
+    document.getElementById('prev-title').textContent = 'Transaction Payload: ' + txId;
+    document.getElementById('prev-content-box').textContent = JSON.stringify(found, null, 2);
+    document.getElementById('prev-download-btn').style.display = 'none';
+    document.getElementById('modal-preview').classList.add('active');
+  }
+}
+
+// --- INCIDENTS & HITL SIGN-OFF ---
+async function fetchIncidents() {
+  try {
+    var r = await fetch('/api/incidents'), d = await r.json();
+    var list = d.incidents || [];
+    document.getElementById('kpi-incidents').textContent = list.length;
+    renderIncidentList(list);
+    renderDashIncidentList(list);
+  } catch (e) {}
+}
+
+function renderIncidentList(incidents) {
+  var el = document.getElementById('incidents-container');
+  if (!incidents.length) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">&#x2705;</div><div class="es-msg">No active space weather incidents detected.</div></div>';
+    return;
+  }
+  el.innerHTML = incidents.map(function(inc){
+    var sev = (inc.severity || 'low').toLowerCase();
+    var haz = inc.hazard_summary || {};
+    var assets = inc.impacted_assets || [];
+    var isPending = inc.status === 'AWAITING_APPROVAL' || inc.status === 'INVESTIGATING';
+    var isResolved = inc.status === 'RESOLVED';
+    var isClosed = inc.status === 'CLOSED';
+
+    var actionHtml = '';
+    if (isPending) {
+      actionHtml = '<button class="btn btn-approve" onclick="openApproveModal(\'' + inc.incident_id + '\',\'' + inc.title.replace(/'/g, "\\'") + '\')">&#x26A1; Authorize SOP</button>' +
+                   '<button class="btn btn-reject" onclick="doReject(\'' + inc.incident_id + '\')">&#x2715; Reject</button>';
+    } else if (isResolved) {
+      var dec = (inc.approval_record && inc.approval_record.decided_by) ? inc.approval_record.decided_by : 'Duty Operator';
+      actionHtml = '<span class="decision-chip chip-approved">&#x2713; Authorized by ' + dec + '</span>';
+    } else if (isClosed) {
+      actionHtml = '<span class="decision-chip chip-rejected">&#x2715; Rejected / False Positive</span>';
+    }
+
+    var assetsHtml = '';
+    if (assets.length) {
+      assetsHtml = '<div class="inc-assets-block"><div class="inc-assets-title">Impacted Operational Infrastructure (' + assets.length + ')</div><ul class="inc-assets-list">' +
+        assets.map(function(a){ return '<li><strong>' + (a.name || a.asset_id) + '</strong>: ' + (a.mitigation_sop || a.status || 'Active monitoring') + '</li>'; }).join('') +
+        '</ul></div>';
+    }
+
+    return '<div class="inc-card sev-' + sev + '">' +
+      '<div class="inc-head">' +
+        '<div><div class="inc-title-text">' + inc.title + '</div><div class="inc-id-text">' + inc.incident_id + ' &rarr; ' + (inc.event_id || '') + '</div></div>' +
+        '<span class="sev-badge ' + sev + '">' + (inc.severity || 'LOW') + '</span>' +
+      '</div>' +
+      '<div class="inc-metrics-row">' +
+        '<div><div class="inc-metric-label">NOAA G-Scale</div><div class="inc-metric-val">' + (haz.g_scale || 'G0') + '</div></div>' +
+        '<div><div class="inc-metric-label">Max Kp</div><div class="inc-metric-val">' + (haz.max_kp_predicted || '4.0') + '</div></div>' +
+        '<div><div class="inc-metric-label">Speed</div><div class="inc-metric-val">' + (haz.speed_km_s || '&mdash;') + ' km/s</div></div>' +
+        '<div><div class="inc-metric-label">Status</div><div class="inc-metric-val" style="color:' + (isPending ? 'var(--amber)' : (isResolved ? 'var(--emerald)' : 'var(--text-secondary)')) + '">' + (inc.status || '&mdash;') + '</div></div>' +
+      '</div>' +
+      assetsHtml +
+      '<div class="inc-footer-row">' +
+        '<span class="inc-audit-txt">Audit entries: ' + (inc.audit_history ? inc.audit_history.length : 1) + '</span>' +
+        '<div class="inc-actions">' + actionHtml + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderDashIncidentList(incidents) {
+  var el = document.getElementById('dash-incidents-list');
+  if (!incidents.length) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">&#x2705;</div><div class="es-msg">No active incidents.</div></div>';
+    return;
+  }
+  el.innerHTML = incidents.slice(0, 5).map(function(inc){
+    var sev = (inc.severity || 'low').toLowerCase();
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(30,41,59,.3)">' +
+      '<div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">' +
+        '<div class="pulse-dot ' + (sev==='high'?'pd-red':(sev==='medium'?'pd-amber':'pd-green')) + '"></div>' +
+        '<div style="font-size:12px;color:var(--text-secondary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + inc.title + '</div>' +
+      '</div>' +
+      '<span class="sev-badge ' + sev + '" style="margin-left:12px">' + (inc.severity || 'LOW') + '</span>' +
+    '</div>';
+  }).join('') + (incidents.length > 5 ? '<div style="text-align:center;padding-top:12px"><a href="#" onclick="showView(\'incidents\');return false;" style="font-size:11.5px;color:var(--cyan);font-weight:700;text-decoration:none">+' + (incidents.length - 5) + ' more &mdash; View all incidents &rarr;</a></div>' : '');
+}
+
+// --- HITL APPROVAL FLOW ---
+function openApproveModal(incId, title) {
+  document.getElementById('modal-app-incid').value = incId;
+  document.getElementById('modal-app-title').textContent = title;
+  document.getElementById('modal-app-desc').textContent = 'Incident ID: ' + incId;
+  document.getElementById('modal-app-signer').value = currentUser.name + ' (' + currentUser.role + ')';
+  document.getElementById('modal-approve').classList.add('active');
+}
+function closeApproveModal() {
+  document.getElementById('modal-approve').classList.remove('active');
+}
+async function submitApproveModal() {
+  var incId = document.getElementById('modal-app-incid').value;
+  var notes = document.getElementById('modal-app-notes').value.trim();
+  closeApproveModal();
+  try {
+    var r = await fetch('/api/incidents/' + incId + '/approve', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        operator_name: currentUser.name,
+        operator_role: currentUser.role,
+        operational_notes: notes || 'Authorized asset protection protocol.'
+      })
+    });
+    if (r.ok) {
+      showToast('Incident signed & authorized by ' + currentUser.name, 'success');
+      fetchIncidents();
+    } else {
+      showToast('Authorization failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error during authorization', 'error');
+  }
+}
+async function doReject(incId) {
+  try {
+    var r = await fetch('/api/incidents/' + incId + '/reject', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        operator_name: currentUser.name,
+        operator_role: currentUser.role,
+        operational_notes: 'Deemed nominal / false positive after operator review.'
+      })
+    });
+    if (r.ok) {
+      showToast('Incident marked rejected', 'info');
+      fetchIncidents();
+    }
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+// --- ASSET MANAGEMENT ---
+async function fetchAssets() {
+  try {
+    var r = await fetch('/api/assets'), d = await r.json();
+    var assets = d.assets || [];
+    document.getElementById('asset-count-badge').textContent = assets.length + ' Registered';
+    renderAssets(assets);
+  } catch (e) {}
+}
+function renderAssets(assets) {
+  var el = document.getElementById('assets-container');
+  if (!assets.length) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">&#x1F6F0;&#xFE0F;</div><div class="es-msg">No assets registered.</div></div>';
+    return;
+  }
+  var dMap = {
+    'SATELLITE_LEO': ['&#x1F6F0;&#xFE0F;', 'type-sat'], 'SATELLITE_GEO': ['&#x1F4E1;', 'type-sat'],
+    'POWER_GRID': ['&#x26A1;', 'type-grid'], 'AVIATION': ['&#x2708;&#xFE0F;', 'type-air'],
+    'GROUND_STATION': ['&#x1F52D;', 'type-radio']
+  };
+  el.innerHTML = assets.map(function(a){
+    var m = dMap[a.domain] || ['&#x1F4CD;', 'type-sat'];
+    return '<div class="asset-card">' +
+      '<div class="asset-card-head">' +
+        '<div class="asset-name-wrap">' +
+          '<span style="font-size:24px">' + m[0] + '</span>' +
+          '<div>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">' +
+              '<span class="asset-type-badge ' + m[1] + '">' + (a.domain||'').replace('_',' ') + '</span>' +
+              '<span class="crit-chip ' + (a.criticality || 'LOW') + '">' + (a.criticality || 'LOW') + '</span>' +
+            '</div>' +
+            '<div class="asset-name-text">' + (a.name || a.asset_id) + '</div>' +
+            '<div class="asset-sub">' + (a.asset_id || '') + ' &bull; ' + (a.operator || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="asset-detail-grid">' +
+        '<div class="asset-detail-item"><div class="asset-detail-label">Location / Orbit</div><div class="asset-detail-value">' + (a.location || '&mdash;') + '</div></div>' +
+        '<div class="asset-detail-item"><div class="asset-detail-label">Operator Contact</div><div class="asset-detail-value">' + (a.contact_email || a.operator || '&mdash;') + '</div></div>' +
+      '</div>' +
+      (a.standard_operating_procedure ? '<div class="sop-block"><div class="sop-title">&#x2699; Standard Operating Procedure</div><div class="sop-text">' + a.standard_operating_procedure + '</div></div>' : '') +
+    '</div>';
+  }).join('');
+}
+function openAssetModal() { document.getElementById('modal-asset').classList.add('active'); }
+function closeAssetModal() { document.getElementById('modal-asset').classList.remove('active'); }
+async function submitNewAsset() {
+  var assetId = document.getElementById('new-asset-id').value.trim();
+  var name = document.getElementById('new-asset-name').value.trim();
+  var domain = document.getElementById('new-asset-domain').value;
+  var criticality = document.getElementById('new-asset-crit').value;
+  var location = document.getElementById('new-asset-loc').value.trim();
+  var op = document.getElementById('new-asset-op').value.trim();
+  var sop = document.getElementById('new-asset-sop').value.trim();
+  if (!assetId || !name) { showToast('Asset ID and Name are required', 'warn'); return; }
+
+  try {
+    var r = await fetch('/api/assets', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        asset_id: assetId, name: name, domain: domain, criticality: criticality,
+        location: location || 'Operational Coordinates', operator: op || 'OCC Team',
+        contact_email: 'ops@solarsentinel.local', primary_hazards: ['Geomagnetic disturbance', 'Electromagnetic charging'],
+        screening_thresholds: {min_g_scale: 'G2', min_kp: 6.0}, standard_operating_procedure: sop || 'Standard telemetry verification protocol.'
+      })
+    });
+    var d = await r.json();
+    if (r.ok) {
+      showToast('Asset ' + name + ' registered successfully!', 'success');
+      closeAssetModal();
+      fetchAssets();
+    } else {
+      showToast(d.detail || 'Failed to onboard asset', 'error');
+    }
+  } catch (e) {
+    showToast('Network error during onboarding', 'error');
+  }
+}
+
+// --- REPORTS & DOWNLOADS CENTER ---
+async function fetchReports() {
+  try {
+    var r = await fetch('/api/reports'), d = await r.json();
+    renderReportCategory('reports-logs-container', d.logs ? d.logs.files : []);
+    renderReportCategory('reports-dossiers-container', d.reports ? d.reports.files : []);
+    renderReportCategory('reports-emails-container', d.emails ? d.emails.files : []);
+    renderReportCategory('reports-audit-container', d.audit ? d.audit.files : []);
+  } catch (e) {}
+}
+function renderReportCategory(containerId, files) {
+  var el = document.getElementById(containerId);
+  if (!files || !files.length) {
+    el.innerHTML = '<div style="color:var(--text-faint);font-size:11.5px;padding:12px 0">No files generated in this category yet. Run pipeline to generate.</div>';
+    return;
+  }
+  el.innerHTML = files.slice(0, 8).map(function(f){
+    return '<div class="report-card">' +
+      '<div class="report-info">' +
+        '<div class="report-title">' + f.filename + '</div>' +
+        '<div class="report-meta">' + f.format + ' &bull; ' + f.size_formatted + ' &bull; ' + f.modified_at.slice(0,19).replace('T',' ') + ' UTC</div>' +
+      '</div>' +
+      '<div class="report-actions">' +
+        '<button class="btn-preview" onclick="openPreviewModal(\'' + f.category + '\',\'' + f.filename + '\')">Preview</button>' +
+        '<a class="btn-download" style="text-decoration:none" href="' + f.download_url + '" download>Download</a>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+async function openPreviewModal(category, filename) {
+  document.getElementById('prev-title').textContent = filename;
+  document.getElementById('prev-download-btn').href = '/api/reports/download/' + category + '/' + filename;
+  document.getElementById('prev-download-btn').style.display = 'inline-block';
+  var box = document.getElementById('prev-content-box');
+  box.textContent = 'Loading...';
+  document.getElementById('modal-preview').classList.add('active');
+  try {
+    var r = await fetch('/api/reports/preview/' + category + '/' + filename);
+    var d = await r.json();
+    if (d.type === 'html') {
+      box.innerHTML = '<iframe style="width:100%;height:450px;border:none;background:#111827;border-radius:6px" srcdoc="' + d.content.replace(/"/g, '&quot;') + '"></iframe>';
+    } else {
+      box.textContent = d.content;
+    }
+  } catch (e) {
+    box.textContent = 'Failed to load preview.';
+  }
+}
+function closePreviewModal() {
+  document.getElementById('modal-preview').classList.remove('active');
+}
+
+// --- SIMULATOR ---
+function updateKpLabel(val) {
+  var g = val>=9?'G5 Extreme':(val>=8?'G4 Severe':(val>=7?'G3 Strong':(val>=6?'G2 Moderate':(val>=5?'G1 Minor':'G0 Quiet'))));
+  document.getElementById('val-kp').textContent = parseFloat(val).toFixed(1) + ' \u2014 ' + g;
+}
+async function runSimulation() {
+  var speed = parseFloat(document.getElementById('slider-speed').value);
+  var kp = parseFloat(document.getElementById('slider-kp').value);
+  var earth = document.getElementById('check-earth').checked;
+  var btn = document.getElementById('btn-sim');
+  btn.disabled = true; btn.textContent = 'Calculating Kinematics...';
+  try {
+    var r = await fetch('/api/simulate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({speed_km_s: speed, predicted_kp: kp, is_earth_directed: earth})
+    });
+    var d = await r.json();
+    var p = d.physics_evaluation;
+    var a = d.asset_impact_screening;
+    var resEl = document.getElementById('sim-result');
+    resEl.style.display = 'block';
+
+    var assetRows = (a.all_results || []).map(function(m){
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(30,41,59,.2);font-size:12px">' +
+        '<span>' + (m.name || m.asset_id) + '</span>' +
+        '<span class="badge ' + (m.impact_status==='POTENTIALLY_AFFECTED'?'badge-warn':'badge-live') + '">' + m.impact_status.replace('_',' ') + '</span>' +
+      '</div>';
+    }).join('');
+
+    resEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--cyan);font-family:\'JetBrains Mono\';margin-bottom:10px">SIMULATION: ' + d.simulation_id + '</div>' +
+      '<div style="display:flex;justify-content:space-between;padding:6px 0"><span>Assigned Risk:</span><strong style="color:var(--amber)">' + p.assigned_risk + ' (' + p.noaa_scale + ')</strong></div>' +
+      '<div style="display:flex;justify-content:space-between;padding:6px 0"><span>Est. Transit Time:</span><strong>' + p.estimated_transit_hours + ' hrs</strong></div>' +
+      '<div style="display:flex;justify-content:space-between;padding:6px 0"><span>Routing Action:</span><strong>' + p.routing_action + '</strong></div>' +
+      '<div style="margin-top:12px;font-size:11px;font-weight:700;color:var(--text-muted)">AFFECTED ASSETS (' + a.affected_assets_count + ')</div>' +
+      assetRows +
+      '<div style="margin-top:16px"><button class="btn-download" style="width:100%" onclick="dispatchSimIncident(\'' + d.simulation_id + '\',' + speed + ',' + kp + ',\'' + p.noaa_scale + '\',\'' + p.assigned_risk + '\',\'' + p.routing_action + '\')">&#x26A1; Dispatch to Incident Feed</button></div>';
+
+    showToast('Simulation complete: ' + p.assigned_risk + ' risk (' + p.noaa_scale + ')', 'info');
+  } catch (e) {
+    showToast('Simulation failed', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Run Physics & Asset Screening Simulation';
+  }
+}
+
+async function dispatchSimIncident(simId, speed, kp, gScale, risk, routing) {
+  try {
+    var r = await fetch('/api/simulate/dispatch', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        simulation_id: simId, speed_km_s: speed, predicted_kp: kp, g_scale: gScale,
+        assigned_risk: risk, routing_action: routing, affected_assets: [], operator_name: currentUser.name
+      })
+    });
+    var d = await r.json();
+    if (r.ok) {
+      showToast('Dispatched simulated incident: ' + d.incident_id, 'success');
+      fetchIncidents();
+      showView('incidents');
+    }
+  } catch (e) {
+    showToast('Dispatch failed', 'error');
+  }
+}
+
+// Polling interval
+fetchStatus();
+fetchIncidents();
+fetchQueue();
+setInterval(fetchStatus, 3000);
+setInterval(fetchIncidents, 3000);
+setInterval(function(){ if (currentView==='queue') fetchQueue(); }, 5000);
+</script>
+</body>
+</html>
