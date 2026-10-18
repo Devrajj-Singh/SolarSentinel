@@ -1558,7 +1558,7 @@ body {
           <div>
             <div class="twh-title">&#x2600;&#xFE0F; Interplanetary CME Kinematics &amp; Magnetosphere Transit</div>
             <div class="twh-sub">
-              Adjust the Coronal Mass Ejection launch velocity below to dynamically calculate the 1 AU Sun-to-Earth transit window ($t = 1\text{ AU} / v$) and inspect shock arrival timing.
+              Adjust the Coronal Mass Ejection launch velocity below to dynamically calculate the 1 AU Sun-to-Earth transit window (t = 1 AU / v) and inspect shock arrival timing.
             </div>
           </div>
           <span class="badge badge-sand">Interactive Physics Model</span>
@@ -1634,7 +1634,7 @@ body {
             <div class="tc-title">Geostationary (GEO)</div>
             <div class="tc-tagline">Dielectric Breakdown &amp; ESD Arcing</div>
             <p class="tc-desc">
-              Relativistic electron flux ($E &gt; 2\text{ MeV}$) penetrates satellite chassis shielding, accumulating inside internal dielectric insulators until catastrophic electrostatic discharge occurs.
+              Relativistic electron flux (E &gt; 2 MeV) penetrates satellite chassis shielding, accumulating inside internal dielectric insulators until catastrophic electrostatic discharge occurs.
             </p>
             <div class="tc-telemetry-spec">
               <div class="tc-spec-row"><span class="tc-spec-label">Targets:</span><span class="tc-spec-val">GPS, Inmarsat, Defense</span></div>
@@ -1706,8 +1706,8 @@ body {
           <!-- SVG CURVY GLOWING COSMIC ENTITY BEAM -->
           <svg class="arch-cosmic-svg" id="arch-cosmic-svg" viewBox="0 0 1000 2400" preserveAspectRatio="none">
             <defs>
-              <!-- Multi-tier phosphorescent glow filter -->
-              <filter id="cosmic-entity-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <!-- Multi-tier phosphorescent glow filter (expanded region to prevent clipping) -->
+              <filter id="cosmic-entity-glow" x="-100%" y="-100%" width="300%" height="300%">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur1" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2" />
                 <feMerge>
@@ -1727,11 +1727,20 @@ body {
                 <stop offset="100%" stop-color="#10b981" />
               </linearGradient>
 
-              <radialGradient id="plasma-orb-grad">
-                <stop offset="0%" stop-color="#ffffff" />
-                <stop offset="30%" stop-color="#00f0ff" />
-                <stop offset="70%" stop-color="#0284c7" />
-                <stop offset="100%" stop-color="transparent" />
+              <!-- Outer Coronal Aura (Pure Radial Gradient - Zero Bounding Box Artifacts) -->
+              <radialGradient id="plasma-corona-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.9" />
+                <stop offset="35%" stop-color="#0284c7" stop-opacity="0.45" />
+                <stop offset="70%" stop-color="#0369a1" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#0369a1" stop-opacity="0" />
+              </radialGradient>
+
+              <!-- Inner Vibrant Plasma Core -->
+              <radialGradient id="plasma-core-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="35%" stop-color="#e0f7ff" stop-opacity="0.95" />
+                <stop offset="70%" stop-color="#00f0ff" stop-opacity="0.85" />
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.4" />
               </radialGradient>
             </defs>
 
@@ -1753,8 +1762,11 @@ body {
 
             <!-- Travelling Cosmic Entity Head (Plasma Orb) -->
             <g id="cosmic-lead-orb" transform="translate(500, 40)">
-              <circle r="32" fill="url(#plasma-orb-grad)" opacity="0.65" />
-              <circle r="14" fill="#00f0ff" filter="url(#cosmic-entity-glow)" />
+              <!-- Outer diffuse coronal aura (pure radial gradient, zero square filter box) -->
+              <circle r="36" fill="url(#plasma-corona-glow)" />
+              <!-- Inner vibrant plasma core -->
+              <circle r="15" fill="url(#plasma-core-glow)" />
+              <!-- Specular stellar nucleus -->
               <circle r="6" fill="#ffffff" />
             </g>
           </svg>
